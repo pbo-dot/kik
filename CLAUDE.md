@@ -31,6 +31,10 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Første udgave er bygget og skubbet. Ejeren skulle slå Pages til (Source: GitHub Actions) og køre udgivelsen igen. Tjek, at https://pbo-dot.github.io/kik/ virker.
 - Endnu ikke prøvet på telefonen: ægte Claude-svar på rigtige billeder (kvalitet og pris pr. billede), kamera, sted, tale, dansk oplæsning og Del → Dagbog.
 - Skitsen, som første udgave er bygget efter: `docs/forslag-kig.png`.
+- Rettet: afbrudte svar (`fixInterrupted` ved start), "Prøv igen" for spørgsmål uden billede, autooplæsning kun af nye svar.
+- Til godkendelse (ikke bygget): `docs/forslag-set-foer-og-retur.png`.
+  - **Har jeg set den før?**: "Set før · N gange" under svaret (match på navn, kun på telefonen) og søgefelt øverst på Dage.
+  - **Find retur** (til ravjagt, hjem i mørke): "Start spor" ved bilen, `watchPosition` + Wake Lock mens Kik er åben, kort med OpenStreetMap/Leaflet, pil og afstand til start, lommelygte-knap. Ærligt: browseren sporer ikke med slukket skærm; huller tegnes som lige streger, pilen til start virker altid.
 
 ## Om ejeren
 
