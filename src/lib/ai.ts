@@ -89,6 +89,7 @@ const IdentifySchema = z.object({
   sikker: z.boolean().describe('true hvis du er ret sikker på, hvad det er'),
   bedOm: z.string().describe('Hvis du ikke er sikker: hvad personen skal tage et billede af for at gøre det sikkert (én kort sætning). Ellers tom streng.'),
   sted: z.boolean().describe('true hvis det er et bestemt sted, man kan finde vej til (bygning, museum, restaurant, seværdighed)'),
+  hvor: z.string().describe('Kort stednavn ud fra koordinaterne, fx "Tisvilde Strand" eller "Indre By, København". Tom streng, hvis stedet er ukendt.'),
 });
 
 export async function identify(photo: string, f: Find): Promise<{ answer: Answer; usd: number }> {

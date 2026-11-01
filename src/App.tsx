@@ -12,6 +12,7 @@ export default function App() {
   if (page === 'fund' && arg) view = <FindView key={arg} id={arg} />;
   else if (page === 'dag' && arg) { view = <Day key={arg} day={arg} />; tab = 'dage'; }
   else if (page === 'dage') { view = <Days />; tab = 'dage'; }
+  else if (page === 'soeg') { view = <Days key={arg} q={arg ?? ''} />; tab = 'dage'; }
   else if (page === 'mere') { view = <More />; tab = 'mere'; }
   else view = <Home />;
   return (

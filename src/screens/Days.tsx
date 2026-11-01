@@ -3,19 +3,35 @@ import { useState } from 'react';
 import { writeDay, AIError } from '../lib/ai';
 import { allFinds, dayFinds, type Find } from '../lib/db';
 import { km } from '../lib/device';
+import { searchFinds } from '../lib/seen';
 import { krText } from '../lib/settings';
-import { Icon, dayLabel, time, useData } from '../ui';
+import { FindRow, Icon, dayLabel, time, useData } from '../ui';
 
-export function Days() {
+export function Days({ q: start = '' }: { q?: string }) {
   const finds = useData(allFinds, []);
+  const [q, setQ] = useState(start);
+  const hits = q.trim() ? searchFinds(finds ?? [], q) : null;
   const days = new Map<string, Find[]>();
   for (const f of finds ?? []) days.set(f.day, [...(days.get(f.day) ?? []), f]);
   const list = [...days].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   return (
     <main className="page">
       <header className="top"><h1>Dage</h1></header>
+      {!!finds?.length && (
+        <form className="search" role="search" onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }}>
+          <Icon name="search" />
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Søg i dine fund" aria-label="Søg i dine fund" enterKeyHint="search" />
+          {q && <button type="button" className="round clear" onClick={() => setQ('')} aria-label="Ryd"><Icon name="close" /></button>}
+        </form>
+      )}
       {finds && !list.length && <p className="sub">Når du har kigget på noget, samles det her.</p>}
-      {list.map(([day, fs]) => (
+      {hits && (
+        <>
+          <div className="sec">{hits.length ? `${hits.length} fund` : 'Ingen fund'}</div>
+          {hits.map((f) => <FindRow key={f.id} f={f} />)}
+        </>
+      )}
+      {!hits && list.map(([day, fs]) => (
         <a key={day} className="row" href={`#/dag/${day}`}>
           <span className="stack">
             {fs.filter((f) => f.thumb).slice(0, 3).map((f) => <img key={f.id} className="thumb" src={f.thumb} alt="" />)}

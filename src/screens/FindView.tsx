@@ -2,10 +2,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { MODES } from '../lib/ai';
 import { runAsk, runIdentify, runMore } from '../lib/actions';
-import { deleteFind, getFind, getPhoto, type Find } from '../lib/db';
+import { allFinds, deleteFind, getFind, getPhoto, type Find } from '../lib/db';
+import { baseName, seenBefore } from '../lib/seen';
 import { canListen, canSpeak, listen, speak, stopSpeaking } from '../lib/device';
 import { getSettings, krText } from '../lib/settings';
-import { Icon, go, time, useData } from '../ui';
+import { FindRow, Icon, go, time, useData } from '../ui';
 
 function spoken(f: Find): string {
   const parts: string[] = [];
@@ -22,6 +23,7 @@ const plain = (s: string) => s.replace(/\*\*|__|^#+\s*/gm, '');
 export function FindView({ id }: { id: string }) {
   const f = useData(() => getFind(id).then((x) => x ?? null), [id]);
   const photo = useData(() => getPhoto(id), [id]);
+  const all = useData(allFinds, []);
   const [talking, setTalking] = useState(false);
   const [q, setQ] = useState('');
   const [listening, setListening] = useState(false);
@@ -111,6 +113,8 @@ export function FindView({ id }: { id: string }) {
         </article>
       )}
 
+      {a && <SeenBefore f={f} all={all ?? []} />}
+
       {f.question && <div className="bubble me">{f.question}</div>}
 
       {f.more && (
@@ -161,5 +165,20 @@ export function FindView({ id }: { id: string }) {
         </form>
       )}
     </main>
+  );
+}
+
+/** "Set før · 7 gange" med de to seneste og et link til resten. */
+function SeenBefore({ f, all }: { f: Find; all: Find[] }) {
+  const seen = seenBefore(f, all);
+  if (!seen.length) return null;
+  return (
+    <section className="card answer seen">
+      <div className="kicker">Set før · {seen.length} {seen.length === 1 ? 'gang' : 'gange'}</div>
+      {seen.slice(0, 2).map((g) => <FindRow key={g.id} f={g} />)}
+      {seen.length > 2 && (
+        <div className="center"><a className="btn text small" href={`#/soeg/${encodeURIComponent(baseName(f.answer!.navn))}`}>Se alle {seen.length} ›</a></div>
+      )}
+    </section>
   );
 }

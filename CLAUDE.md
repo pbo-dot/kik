@@ -11,13 +11,14 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - React + TypeScript + Vite, `vite-plugin-pwa` (samme stil som pbo-dot/dagbog). Ingen server. Alt gemmes på telefonen i IndexedDB (`src/lib/db.ts`: `finds` og `photos` for sig, så lister er hurtige).
 - Claude kaldes direkte fra telefonen med ejerens egen nøgle (`localStorage["kik.claudeKey"]`). Model i `settings.model` (standard `claude-sonnet-5-5`, valgfrit `claude-opus-5-5`). Alle kald har `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`).
 - Agenterne (`src/lib/ai.ts`):
-  - **Kenderen** `identify()`: billede + koordinater → struktureret svar (`kategori, navn, svar, sikker, bedOm, sted`) med zod, effort low. Fire tilstande (`MODES`): Hvad er det?, Oversæt, Pris og anmeldelser, Hvordan gør jeg?
+  - **Kenderen** `identify()`: billede + koordinater → struktureret svar (`kategori, navn, svar, sikker, bedOm, sted, hvor`) med zod, effort low. Fire tilstande (`MODES`): Hvad er det?, Oversæt, Pris og anmeldelser, Hvordan gør jeg?
   - **Opslageren** `tellMore()` og `askAbout()`: websøgning (`web_search_20260209`, højst 4) for "Fortæl mere" og spørgsmål. Pris og Hvordan slår op med det samme.
   - **Skriveren** `writeDay()`: et kort dagbogsafsnit i jeg-form ud fra dagens fund.
 - `src/lib/actions.ts` kører arbejdet i baggrunden og gemmer undervejs (`busy`), så man kan skifte skærm. Skærmene lytter med `onChange`/`useData`.
 - Billeder: 1280 px JPEG til Claude, 240 px miniature til lister. Sted fra `navigator.geolocation` (kun når der tages et billede eller spørges).
 - Tale: `SpeechRecognition` (da-DK) til at spørge, `speechSynthesis` til oplæsning ("Læs svaret op med det samme" under Mere).
 - "Del → Dagbog" bruger `navigator.share` med tekst; Dagbog modtager delt tekst som en ny samtale. Dagbog skal ikke ændres.
+- **Har jeg set den før?** (`src/lib/seen.ts`): under svaret vises "Set før · N gange" (match på kernen af navnet, `baseName`), og "Se alle" åbner søgningen (`#/soeg/<ord>`). Søgefelt øverst på Dage søger i navn, kategori, sted, svar og samtale. Kun på telefonen, gratis. `hvor` (stednavn) mangler i de første fund.
 - Forbrug: skøn ud fra listepriser (`track` i `ai.ts`), pr. fund og pr. måned under Mere.
 
 ## Byg og udgivelse
@@ -33,7 +34,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Skitsen, som første udgave er bygget efter: `docs/forslag-kig.png`.
 - Rettet: afbrudte svar (`fixInterrupted` ved start), "Prøv igen" for spørgsmål uden billede, autooplæsning kun af nye svar.
 - Til godkendelse (ikke bygget): `docs/forslag-set-foer-og-retur.png` og `-mork.png` (kilde: `.html`).
-  - **Har jeg set den før?**: "Set før · N gange" under svaret (match på navn, kun på telefonen) og søgefelt øverst på Dage.
+  - **Har jeg set den før?**: bygget.
   - **Find retur** (til ravjagt, hjem i mørke): "Start spor" ved bilen, `watchPosition` + Wake Lock mens Kik er åben, kort med OpenStreetMap/Leaflet, pil og afstand til start, lommelygte-knap. Ærligt: browseren sporer ikke med slukket skærm; huller tegnes som lige streger, pilen til start virker altid.
 
 ## Om ejeren

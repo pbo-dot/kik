@@ -13,6 +13,7 @@ export interface Answer {
   sikker: boolean;
   bedOm: string;
   sted: boolean;
+  hvor?: string; // kort stednavn, fx "Tisvilde Strand" (mangler i de første fund)
 }
 
 export interface Find {

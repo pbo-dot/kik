@@ -14,7 +14,7 @@ await p.route('https://api.anthropic.com/**',async r=>{
   if(r.request().method()==='OPTIONS') return r.fulfill({status:204,headers:H});
   const body=JSON.parse(r.request().postData());calls.push(body);
   let text;
-  if(body.output_config?.format) text=JSON.stringify({kategori:'Bygning',navn:'Rundetårn',svar:'Bygget af Christian 4. i 1642 som stjernetårn. Der er ingen trapper: man går op ad en 209 meter lang snoet gang, som en russisk zar efter sigende red op ad.',sikker:true,bedOm:'',sted:true});
+  if(body.output_config?.format) text=JSON.stringify({kategori:'Bygning',navn:'Rundetårn',svar:'Bygget af Christian 4. i 1642 som stjernetårn. Der er ingen trapper: man går op ad en 209 meter lang snoet gang, som en russisk zar efter sigende red op ad.',sikker:true,bedOm:'',sted:true,hvor:'Indre By, København'});
   else if(body.tools) text= body.messages.length>1||/spørgsmål/.test(JSON.stringify(body.messages))?'Ja, det kan du. Entréen er 40 kr for voksne, og der er åbent til kl. 21 i aften.':'Tårnet er stadig Europas ældste fungerende observatorium. Øverst er der udsigt over hele indre by.\n\nÅbent i dag 10–21. Entré 40 kr.';
   else text='I dag gik jeg en tur i indre by og kiggede op på Rundetårn.';
   const content=[{type:'text',text}];
@@ -39,6 +39,14 @@ await p.goto('http://localhost:4173/#/dage');await p.waitForTimeout(300);
 await p.locator('a.row').first().click();await p.waitForTimeout(300);
 await p.getByText('Skriv dagen').click();await p.waitForSelector('text=I dag gik jeg');
 await p.screenshot({path:`${SP}/4-dag-${scheme}.png`,fullPage:true});
+// Har jeg set den før? Samme ting igen → "Set før", og søg på Dage
+await p.goto('http://localhost:4173/#/');await p.waitForTimeout(300);
+await p.locator('input[capture]').setInputFiles(path.join(__dirname,'foto.png'));
+await p.waitForSelector('text=Set før · 1 gang');await p.waitForTimeout(300);
+await p.screenshot({path:`${SP}/6-set-foer-${scheme}.png`,fullPage:true});
+await p.goto('http://localhost:4173/#/dage');await p.waitForTimeout(300);
+await p.locator('.search input').fill('rundet');await p.waitForSelector('text=2 fund');
+await p.screenshot({path:`${SP}/7-soeg-${scheme}.png`});
 await p.goto('http://localhost:4173/#/mere');await p.waitForTimeout(300);
 await p.screenshot({path:`${SP}/5-mere-${scheme}.png`,fullPage:true});
 console.log(scheme,'calls:',calls.map(c=>`${c.model} ${c.output_config?.format?'format':''} ${c.tools?'web':''} fb=${c.fallbacks}`).join(' | '));

@@ -1,6 +1,6 @@
 // Fælles: ikoner, navigation og små hjælpere til skærmene.
 import { useEffect, useState, type ReactNode } from 'react';
-import { onChange } from './lib/db';
+import { dayOf, onChange, type Find } from './lib/db';
 
 /** Den aktuelle side ud fra #/… */
 export function useRoute(): string[] {
@@ -46,6 +46,8 @@ const paths: Record<string, ReactNode> = {
   more: <><circle cx="5" cy="12" r="1.3" /><circle cx="12" cy="12" r="1.3" /><circle cx="19" cy="12" r="1.3" /></>,
   send: <path d="M4 12l16-8-6 16-2-6z" />,
   refresh: <path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" />,
+  search: <><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></>,
+  close: <path d="M6 6l12 12M18 6L6 18" />,
 };
 
 export function Icon({ name, size = 22 }: { name: keyof typeof paths | string; size?: number }) {
@@ -83,4 +85,23 @@ export function dayLabel(day: string): string {
   const d = new Date(`${day}T12:00:00`);
   const s = d.toLocaleDateString('da-DK', { weekday: 'long', day: 'numeric', month: 'long' });
   return s[0].toUpperCase() + s.slice(1);
+}
+
+/** "I dag · Tisvilde Strand" eller "14. oktober · 16.42" */
+export function findMeta(f: Find): string {
+  const d = f.day === dayOf(Date.now()) ? 'I dag' : new Date(`${f.day}T12:00:00`).toLocaleDateString('da-DK', { day: 'numeric', month: 'long' });
+  return `${d} · ${f.answer?.hvor || time(f.createdAt)}`;
+}
+
+/** Ét fund i en liste. */
+export function FindRow({ f, meta }: { f: Find; meta?: string }) {
+  return (
+    <a className="row" href={`#/fund/${f.id}`}>
+      {f.thumb ? <img className="thumb" src={f.thumb} alt="" /> : <span className="thumb q"><Icon name="mic" /></span>}
+      <span className="grow">
+        <b>{f.answer?.navn ?? f.question ?? (f.busy ? 'Kigger …' : 'Uden svar')}</b>
+        <span>{meta ?? findMeta(f)}</span>
+      </span>
+    </a>
+  );
 }
