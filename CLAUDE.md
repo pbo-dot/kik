@@ -76,4 +76,5 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 
 ## Senere (idéer, ikke bygget)
 
-- "Har jeg set den før?" (søg i egne fund), guidet tur ("5 ting inden for 1 km"), rejsemappe/hæfte, rav og vejr, deling med familie.
+- Guidet tur ("5 ting inden for 1 km"), rejsemappe/hæfte (turen som fil), rav og vejr, deling med familie.
+- Fra GitHub-kig (nov. 2026, kun inspiration): "Er det A eller B?" ved tvivl (Seek, MuSeeum), samlinger og månedsoversigt (Seek), svaret skrives frem løbende (MyMuseumGuide), pænere oplæsningsstemme (koster).
