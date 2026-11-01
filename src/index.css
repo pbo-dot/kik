@@ -84,6 +84,30 @@ h3 { font-size: 17px; margin: 0 0 10px; }
 .search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 17px; color: var(--on); padding: 10px 0; }
 .search input::-webkit-search-cancel-button { display: none; }
 .search .clear { background: transparent; color: var(--mut); }
+.track { background: var(--pri); color: var(--pri-on); }
+.track .live-label { font-size: 13px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; opacity: .85; }
+.track .big { font-size: 28px; font-weight: 800; line-height: 1.2; margin: 2px 0; }
+.track .small { opacity: .85; }
+.track .actions { margin-bottom: 0; }
+.btn.on-pri { background: var(--pri-on); color: var(--pri); }
+.btn.ghost { background: color-mix(in srgb, var(--pri-on) 20%, transparent); color: var(--pri-on); }
+.rec { display: inline-block; width: 10px; height: 10px; border-radius: 5px; background: currentColor; margin-right: 4px; animation: pulse 1.6s ease-in-out infinite; }
+
+.map { height: 52vh; min-height: 300px; border-radius: var(--radius); overflow: hidden; background: var(--ton); margin: 6px 0 10px; z-index: 0; }
+.map .leaflet-container, .map.leaflet-container { background: var(--ton); font: 13px var(--sans); }
+.map .trk { stroke: var(--pri); }
+.map .start-dot { stroke: var(--bg); fill: #ff9f43; fill-opacity: 1; }
+.map .me-dot { stroke: var(--bg); fill: var(--pri); fill-opacity: 1; }
+.map .map-label { background: var(--card); color: var(--on); border: 0; border-radius: 10px; font-weight: 700; box-shadow: none; }
+.map .map-label::before { display: none; }
+.map.leaflet-container .leaflet-control-attribution { margin: 0 14px 6px 0 !important; border-radius: 8px; padding: 0 6px;  background: color-mix(in srgb, var(--card) 80%, transparent); color: var(--mut); }
+.map.leaflet-container .leaflet-control-attribution a { color: var(--mut); }
+:root[data-theme='dark'] .map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) .map .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); } }
+.way { display: flex; align-items: center; gap: 16px; }
+.way .big { display: block; font-size: 32px; font-weight: 800; line-height: 1.1; }
+.way .muted { display: block; }
+.ring { width: 76px; height: 76px; border-radius: 38px; background: var(--pri); color: var(--pri-on); display: grid; place-items: center; flex: none; transition: transform .3s ease; }
 .error-card { display: flex; align-items: center; gap: 12px; color: var(--danger); }
 
 .photo { display: block; width: 100%; max-height: 46vh; object-fit: cover; border-radius: var(--radius); background: var(--ton); min-height: 160px; }

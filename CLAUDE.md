@@ -19,6 +19,8 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Tale: `SpeechRecognition` (da-DK) til at spørge, `speechSynthesis` til oplæsning ("Læs svaret op med det samme" under Mere).
 - "Del → Dagbog" bruger `navigator.share` med tekst; Dagbog modtager delt tekst som en ny samtale. Dagbog skal ikke ændres.
 - **Har jeg set den før?** (`src/lib/seen.ts`): under svaret vises "Set før · N gange" (match på kernen af navnet, `baseName`), og "Se alle" åbner søgningen (`#/soeg/<ord>`). Søgefelt øverst på Dage søger i navn, kategori, sted, svar og samtale. Kun på telefonen, gratis. `hvor` (stednavn) mangler i de første fund.
+- **Find retur** (`src/lib/track.ts`, `src/screens/Retur.tsx`, rute `#/retur`): "Start spor" på forsiden gemmer start og punkter (`watchPosition`, mindst 8 m mellem punkter, upræcise over 40 m springes over) i `localStorage["kik.track"]` og holder skærmen tændt (Wake Lock). Fortsætter, når Kik åbnes igen. Kort med Leaflet + OpenStreetMap (hentes først, når skærmen åbnes; mørkt kort via CSS-filter; brikker gemmes 30 dage i servicearbejderen, cache `kort`), pil mod et punkt ca. 40 m tilbage ad sporet (drejer med kompasset), afstand og tid tilbage ad sporet (4 km/t), lommelygte (`torch` i `device.ts`). Browseren kan ikke måle med slukket skærm: huller bliver lige streger. CSP i `index.html` tillader `tile.openstreetmap.org`; kortet sender kun appens adresse som henviser (krav fra OpenStreetMap).
+- Browsertest for Find retur: `node e2e/retur.e2e.cjs` (falsk GPS-tur ved Tisvilde, falske kortbrikker).
 - Forbrug: skøn ud fra listepriser (`track` i `ai.ts`), pr. fund og pr. måned under Mere.
 
 ## Byg og udgivelse
@@ -33,9 +35,9 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Endnu ikke prøvet på telefonen: ægte Claude-svar på rigtige billeder (kvalitet og pris pr. billede), kamera, sted, tale, dansk oplæsning og Del → Dagbog.
 - Skitsen, som første udgave er bygget efter: `docs/forslag-kig.png`.
 - Rettet: afbrudte svar (`fixInterrupted` ved start), "Prøv igen" for spørgsmål uden billede, autooplæsning kun af nye svar.
-- Til godkendelse (ikke bygget): `docs/forslag-set-foer-og-retur.png` og `-mork.png` (kilde: `.html`).
+- Udkast: `docs/forslag-set-foer-og-retur.png` og `-mork.png` (kilde: `.html`).
   - **Har jeg set den før?**: bygget.
-  - **Find retur** (til ravjagt, hjem i mørke): "Start spor" ved bilen, `watchPosition` + Wake Lock mens Kik er åben, kort med OpenStreetMap/Leaflet, pil og afstand til start, lommelygte-knap. Ærligt: browseren sporer ikke med slukket skærm; huller tegnes som lige streger, pilen til start virker altid.
+  - **Find retur**: bygget. Ikke prøvet på telefonen endnu (GPS, kompas, lommelygte, skærm tændt).
 
 ## Om ejeren
 
@@ -46,7 +48,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 ## Færdig-tjekliste (før ejeren får besked)
 
 - [ ] `npm run build` og `npm run lint` uden fejl.
-- [ ] `node e2e/kik.e2e.cjs` kørt, og skærmbillederne set (lys og mørk).
+- [ ] `node e2e/kik.e2e.cjs` og `node e2e/retur.e2e.cjs` kørt, og skærmbillederne set (lys og mørk).
 - [ ] CLAUDE.md opdateret, hvis noget nyt er bygget.
 - [ ] Skubbet til `main`, og "Udgiv på GitHub Pages" er grøn.
 - [ ] Ejeren har fået linket og en ærlig besked om, hvad der kun kan testes på telefonen.

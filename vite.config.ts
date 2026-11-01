@@ -32,6 +32,12 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png}'],
         navigateFallback: 'index.html',
+        // Kortbrikker gemmes, så kortet også kan ses, hvor der er dårlig dækning
+        runtimeCaching: [{
+          urlPattern: /^https:\/\/tile\.openstreetmap\.org\//,
+          handler: 'CacheFirst',
+          options: { cacheName: 'kort', expiration: { maxEntries: 800, maxAgeSeconds: 30 * 24 * 3600 }, cacheableResponse: { statuses: [0, 200] } },
+        }],
       },
     }),
   ],

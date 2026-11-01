@@ -1,10 +1,11 @@
 // Kik: peg på noget, og spørg.
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MODES } from '../lib/ai';
 import { newPhoto, newQuestion } from '../lib/actions';
 import { dayFinds, dayOf, type Mode } from '../lib/db';
 import { canListen, listen } from '../lib/device';
 import { getApiKey } from '../lib/settings';
+import { getTrack, onTrack, startTrack, stopTrack, trackKm } from '../lib/track';
 import { Icon, go, time, useData } from '../ui';
 
 const MODE_KEY = 'kik.mode';
@@ -74,6 +75,8 @@ export function Home() {
         </a>
       )}
 
+      <TrackCard onError={setErr} />
+
       <div className="chips" role="radiogroup" aria-label="Hvad vil du vide?">
         {(Object.keys(MODES) as Mode[]).map((m) => (
           <button key={m} role="radio" aria-checked={mode === m} className={`chip ${mode === m ? 'on' : ''}`} onClick={() => pick(m)}>
@@ -118,5 +121,43 @@ export function Home() {
         </>
       )}
     </main>
+  );
+}
+
+/** Spor til "Find retur": en knap, eller et kort, mens sporet kører. */
+function TrackCard({ onError }: { onError: (e: string) => void }) {
+  const [now, setNow] = useState(() => Date.now());
+  const [starting, setStarting] = useState(false);
+  useEffect(() => {
+    const off = onTrack(() => setNow(Date.now()));
+    const t = setInterval(() => setNow(Date.now()), 30_000);
+    return () => { off(); clearInterval(t); };
+  }, []);
+  const t = getTrack();
+
+  if (!t) {
+    return (
+      <div className="center">
+        <button className="btn tonal" disabled={starting} onClick={async () => {
+          setStarting(true);
+          onError('');
+          try { await startTrack(); } catch (e) { onError((e as Error).message); } finally { setStarting(false); }
+        }}><Icon name="pin" /> {starting ? 'Finder dig …' : 'Start spor'}</button>
+      </div>
+    );
+  }
+  const min = Math.max(0, Math.round((now - t.startedAt) / 60_000));
+  const dur = min < 60 ? `${min} min` : `${Math.floor(min / 60)} t ${min % 60} min`;
+  const d = trackKm(t);
+  return (
+    <section className="card track">
+      <div className="live-label"><span className="rec" /> Spor kører</div>
+      <div className="big">{d < 1 ? `${Math.round(d * 1000)} m` : `${d.toLocaleString('da-DK', { maximumFractionDigits: 1 })} km`} · {dur}</div>
+      <div className="small">Startede kl. {time(t.startedAt)}</div>
+      <div className="actions">
+        <a className="btn on-pri" href="#/retur"><Icon name="retur" /> Find retur</a>
+        <button className="btn ghost" onClick={() => { if (confirm('Stop sporet? Vejen tilbage glemmes.')) stopTrack(); }}>Stop</button>
+      </div>
+    </section>
   );
 }

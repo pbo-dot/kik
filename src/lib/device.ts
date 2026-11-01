@@ -100,3 +100,28 @@ export function listen(onText: (text: string) => void, onEnd: (err?: string) => 
   rec.start();
   return () => rec.stop();
 }
+
+// ---------- Lommelygte ----------
+
+let torchStream: MediaStream | null = null;
+
+/** Tænder eller slukker lommelygten (kameraets lys). Giver false, hvis telefonen ikke tillader det. */
+export async function torch(on: boolean): Promise<boolean> {
+  if (!on) {
+    torchStream?.getTracks().forEach((t) => t.stop());
+    torchStream = null;
+    return true;
+  }
+  try {
+    torchStream ??= await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const t = torchStream.getVideoTracks()[0];
+    const caps = (t.getCapabilities?.() ?? {}) as { torch?: boolean };
+    if (!caps.torch) throw new Error('ingen lygte');
+    await t.applyConstraints({ advanced: [{ torch: true } as MediaTrackConstraintSet] });
+    return true;
+  } catch {
+    torchStream?.getTracks().forEach((t) => t.stop());
+    torchStream = null;
+    return false;
+  }
+}
