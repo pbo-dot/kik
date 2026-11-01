@@ -20,19 +20,23 @@ function spoken(f: Find): string {
 const plain = (s: string) => s.replace(/\*\*|__|^#+\s*/gm, '');
 
 export function FindView({ id }: { id: string }) {
-  const f = useData(() => getFind(id), [id]);
+  const f = useData(() => getFind(id).then((x) => x ?? null), [id]);
   const photo = useData(() => getPhoto(id), [id]);
   const [talking, setTalking] = useState(false);
   const [q, setQ] = useState('');
   const [listening, setListening] = useState(false);
   const stop = useRef<() => void>(() => {});
   const spokenFor = useRef('');
+  const wasBusy = useRef(false);
 
   useEffect(() => () => stopSpeaking(), []);
 
-  // Læs automatisk op, når et nyt svar kommer (hvis slået til)
+  // Læs automatisk op, når et nyt svar kommer (hvis slået til). Gamle fund læses ikke op af sig selv.
   useEffect(() => {
-    if (!f || f.busy || !getSettings().autoSpeak || !canSpeak()) return;
+    if (!f) return;
+    if (f.busy) { wasBusy.current = true; return; }
+    if (!wasBusy.current || !getSettings().autoSpeak || !canSpeak()) return;
+    wasBusy.current = false;
     const text = spoken(f);
     if (text && text !== spokenFor.current) {
       spokenFor.current = text;
@@ -42,7 +46,7 @@ export function FindView({ id }: { id: string }) {
   }, [f]);
 
   if (f === undefined) return <main className="page" />;
-  if (f === null || !f) return <main className="page"><p>Fundet findes ikke længere.</p><a href="#/">Til Kik</a></main>;
+  if (f === null) return <main className="page"><p>Fundet findes ikke længere.</p><a href="#/">Til Kik</a></main>;
 
   const toggleSpeak = () => {
     if (talking) { stop.current(); setTalking(false); return; }
@@ -80,7 +84,7 @@ export function FindView({ id }: { id: string }) {
   const mapUrl = a?.sted
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a.navn)}`
     : f.lat != null ? `https://www.google.com/maps/search/?api=1&query=${f.lat},${f.lon}` : null;
-  const turns = f.question ? f.chat : f.chat; // spørgsmål uden billede vises som samtale
+  const turns = f.chat;
 
   return (
     <main className="page">
@@ -131,6 +135,7 @@ export function FindView({ id }: { id: string }) {
         <div className="card error-card">
           <span className="grow">{f.error}</span>
           {!a && f.hasPhoto && <button className="btn tonal small" onClick={() => void runIdentify(id)}><Icon name="refresh" /> Prøv igen</button>}
+          {f.question && !f.chat.length && <button className="btn tonal small" onClick={() => void runAsk(id, f.question!)}><Icon name="refresh" /> Prøv igen</button>}
         </div>
       )}
 

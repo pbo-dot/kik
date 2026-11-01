@@ -1,7 +1,7 @@
 // Det, der sker, når man tager et billede eller spørger. Arbejdet kører videre,
 // selvom man skifter skærm; skærmene får besked via onChange i db.ts.
 import { AIError, askAbout, identify, tellMore } from './ai';
-import { dayOf, getFind, getPhoto, putFind, putPhoto, type Find, type Mode } from './db';
+import { allFinds, dayOf, getFind, getPhoto, putFind, putPhoto, type Find, type Mode } from './db';
 import { shrink, where } from './device';
 
 const message = (e: unknown) => (e instanceof AIError ? e.message : 'Noget gik galt. Prøv igen.');
@@ -68,6 +68,13 @@ export async function runAsk(id: string, question: string) {
   } catch (e) {
     // Spørgsmålet fjernes igen, så det kan stilles på ny
     await update(id, (g) => ({ busy: undefined, error: message(e), chat: g.chat.slice(0, -1) }));
+  }
+}
+
+/** Blev appen lukket midt i et svar, står fundet som "i gang" for evigt. Ryd op ved start. */
+export async function fixInterrupted() {
+  for (const f of await allFinds()) {
+    if (f.busy) await putFind({ ...f, busy: undefined, error: 'Blev afbrudt. Prøv igen.' });
   }
 }
 
