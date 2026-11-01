@@ -1,0 +1,95 @@
+<!doctype html><html lang="da"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../src/index.css">
+<style>
+body{background:#d9dce8;margin:0;padding:28px;font-family:Roboto,system-ui,sans-serif}
+.wrap{display:flex;gap:28px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:12px;align-items:center}
+.cap{font:700 18px/1.3 Roboto,sans-serif;color:#141a33;text-align:center;width:390px}
+.cap small{display:block;font-weight:400;font-size:14px;color:#3b4166;margin-top:4px}
+.phone{width:390px;height:844px;border-radius:44px;overflow:hidden;position:relative;background:var(--bg);color:var(--on);box-shadow:0 10px 40px #0003;border:8px solid #111}
+.phone .page{padding-top:18px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;background:var(--card);padding:10px 0 18px}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:13px;font-weight:600;text-decoration:none}
+.pill{width:64px;height:32px;border-radius:16px;display:grid;place-items:center}
+.tabbar a.on .pill{background:var(--ton)}
+.photo{width:100%;height:250px;border-radius:28px;display:block;background:radial-gradient(circle at 45% 55%,#f7b733 0 16%,#d9861c 22%,transparent 23%),radial-gradient(circle at 68% 38%,#e9a23b 0 6%,transparent 7%),linear-gradient(160deg,#c9b48f,#8f7a58)}
+.amber{background:radial-gradient(circle at 50% 55%,#f7b733 0 30%,#c97a12 45%,#a88c62 47%)}
+.row{display:flex;gap:14px;align-items:center;padding:10px 12px;background:var(--card);border-radius:22px;margin:8px 0;text-decoration:none}
+.row b{display:block}.row span span{color:var(--mut);font-size:14px}
+.thumb{width:56px;height:56px;border-radius:16px;flex:none}
+.seen{background:var(--ton)}
+.seen .kick{font-size:13px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--pri)}
+.seen .row{background:var(--card);margin:6px 0 0;padding:8px 10px}
+.seen .thumb{width:44px;height:44px;border-radius:12px}
+.sec{font-weight:800;color:var(--mut);font-size:14px;margin:16px 6px 4px}
+.search{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:30px;padding:12px 18px;margin:4px 0 6px;font-size:17px}
+.track{background:var(--pri);color:var(--pri-on)}
+.track .big{font-size:28px;font-weight:800}
+.track .btn.tonal{background:#fff3;color:var(--pri-on)}
+.track .btn.white{background:var(--pri-on);color:var(--pri)}
+.night{--bg:#10121c;--card:#1c2030;--ton:#2b3152;--on:#eef0ff;--mut:#aab0d6;--pri:#aab6ff;--pri-on:#10121c}
+.rec{display:inline-block;width:10px;height:10px;border-radius:5px;background:currentColor;vertical-align:1px}
+.search i,.btn i,.round i,.pill i{display:inline-flex}
+[data-theme=dark] body{background:#05060a}[data-theme=dark] .cap{color:#eef0ff}[data-theme=dark] .cap small{color:#aab0d6}
+.map{height:430px;border-radius:28px;overflow:hidden;margin:6px 0 10px}
+.arrowcard{display:flex;align-items:center;gap:16px}
+.arrowcard .big{font-size:30px;font-weight:800;line-height:1.1}
+.ring{width:76px;height:76px;border-radius:38px;background:var(--pri);color:var(--pri-on);display:grid;place-items:center;flex:none}
+</style><style>
+.mapbox{height:440px;border-radius:28px;overflow:hidden;position:relative;margin:6px 0 10px}
+.fab{position:absolute;right:12px;bottom:12px;width:52px;height:52px;border-radius:26px;background:var(--card);color:var(--pri);display:grid;place-items:center;box-shadow:0 2px 8px #0003}
+.stats{display:flex;gap:10px}.stats .card{flex:1;margin:0;padding:14px 16px}.stats b{display:block;font-size:26px;font-weight:800;line-height:1.1}.stats span{color:var(--mut);font-size:14px}
+.land{fill:#e8e4d8}.sea{fill:#b9d3e8}.beach{fill:#efe3c2}.road{stroke:#fff;stroke-width:5;fill:none}
+[data-theme=dark] .phone:not(.night) .land,.night .land{fill:#23271f}[data-theme=dark] .phone .sea,.night .sea{fill:#1a2436}[data-theme=dark] .phone .beach,.night .beach{fill:#3a3829}[data-theme=dark] .phone .road,.night .road{stroke:#3b3f4a}
+.trk{stroke:var(--pri)}.me{fill:var(--pri);stroke:var(--bg)}
+</style></head><body>
+<div class="wrap">
+<div class="col"><div class="cap">1. Én knap på forsiden: Kort<small>Virker med og uden spor</small></div>
+<div class="phone"><main class="page">
+ <header class="top"><h1>Kik</h1></header>
+ <section class="card track">
+  <div class="small" style="opacity:.85;font-weight:700"><span class="rec"></span> SPOR KØRER</div>
+  <div class="big">1,1 km · 24 min</div>
+  <div class="small" style="opacity:.85">Startede kl. 14.10</div>
+  <div class="actions" style="margin-bottom:0"><span class="btn white"><i data-i="map"></i> Kort</span><span class="btn tonal">Stop</span></div>
+ </section>
+ <div class="chips"><button class="chip on">Hvad er det?</button><button class="chip">Oversæt</button><button class="chip">Pris</button><button class="chip">Hvordan?</button></div>
+ <button class="shoot" style="max-height:250px"><i data-i="camera" data-s="44"></i><span>Tag billede</span></button>
+</main><nav class="tabbar"><a class="on"><span class="pill"><i data-i="eye"></i></span>Kik</a><a><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
+
+<div class="col"><div class="cap">2. Kortet følger dig, mens du går<small>Prikkerne viser, hvor du har gået</small></div>
+<div class="phone"><main class="page">
+ <header class="top"><button class="round"><i data-i="back"></i></button><h1 class="h-small grow">Kort</h1><button class="round" aria-label="Stop spor"><i data-i="stop"></i></button></header>
+ <div class="mapbox"><svg viewBox="0 0 340 440" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+<rect width="340" height="440" class="land"/><path class="sea" d="M0 30C50 60 75 110 95 150C120 200 130 250 150 290C170 330 190 380 210 440H0Z"/>
+<path class="beach" d="M0 30C50 60 75 110 95 150C120 200 130 250 150 290C170 330 190 380 210 440H232C212 380 192 330 172 290C150 245 140 200 118 150C96 105 70 60 20 26Z"/>
+<path class="road" d="M340 40C320 50 300 62 290 70"/>
+<path class="trk" d="M290 70C262 90 230 100 205 125C180 150 150 175 140 210C130 240 150 270 165 300C178 325 190 350 196 382" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 12"/>
+<circle cx="290" cy="70" r="11" fill="#ff9f43" stroke="#fff" stroke-width="3"/>
+<g><circle cx="196" cy="382" r="26" fill="var(--pri)" opacity=".18"/><path d="M196 356l9 18h-18z" fill="var(--pri)" opacity=".7"/><circle class="me" cx="196" cy="382" r="10" stroke-width="3"/></g>
+</svg><span class="fab"><i data-i="locate"></i></span></div>
+ <div class="stats"><div class="card"><b>1,1 km</b><span>gået</span></div><div class="card"><b>24 min</b><span>siden start</span></div></div>
+ <div class="actions"><span class="btn filled"><i data-i="retur"></i> Find retur</span><span class="btn tonal"><i data-i="light"></i> Lygte</span></div>
+</main><nav class="tabbar"><a class="on"><span class="pill"><i data-i="eye"></i></span>Kik</a><a><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
+
+<div class="col"><div class="cap">3. Find retur: samme kort, nu med pil<small>"Skjul pil" viser "gået" igen</small></div>
+<div class="phone"><main class="page">
+ <header class="top"><button class="round"><i data-i="back"></i></button><h1 class="h-small grow">Kort</h1><button class="round" aria-label="Stop spor"><i data-i="stop"></i></button></header>
+ <div class="mapbox"><svg viewBox="0 0 340 440" width="100%" height="100%" preserveAspectRatio="xMidYMid slice">
+<rect width="340" height="440" class="land"/><path class="sea" d="M0 30C50 60 75 110 95 150C120 200 130 250 150 290C170 330 190 380 210 440H0Z"/>
+<path class="beach" d="M0 30C50 60 75 110 95 150C120 200 130 250 150 290C170 330 190 380 210 440H232C212 380 192 330 172 290C150 245 140 200 118 150C96 105 70 60 20 26Z"/>
+<path class="road" d="M340 40C320 50 300 62 290 70"/>
+<path class="trk" d="M290 70C262 90 230 100 205 125C180 150 150 175 140 210C130 240 150 270 165 300C178 325 190 350 196 382" fill="none" stroke-width="6" stroke-linecap="round" stroke-dasharray="1 12"/>
+<circle cx="290" cy="70" r="11" fill="#ff9f43" stroke="#fff" stroke-width="3"/>
+<g><circle cx="196" cy="382" r="26" fill="var(--pri)" opacity=".18"/><path d="M196 356l9 18h-18z" fill="var(--pri)" opacity=".7"/><circle class="me" cx="196" cy="382" r="10" stroke-width="3"/></g>
+</svg><span class="fab"><i data-i="locate"></i></span></div>
+ <section class="card arrowcard" style="margin:0"><span class="ring"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(25deg)"><path d="M12 20V4M5 11l7-7 7 7"/></svg></span>
+  <span class="grow"><span class="big">1,1 km</span><br><span class="muted">til start · ca. 16 min<br>Gå mod nordøst</span></span></section>
+ <div class="actions"><span class="btn tonal"><i data-i="map"></i> Skjul pil</span><span class="btn tonal"><i data-i="light"></i> Lygte</span></div>
+</main><nav class="tabbar"><a class="on"><span class="pill"><i data-i="eye"></i></span>Kik</a><a><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
+</div>
+<script>
+const P={map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',locate:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>',pin:'<path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',up:'<path d="M12 20V4M5 11l7-7 7 7"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',back:'<path d="M15 5l-7 7 7 7"/>',trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',days:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',close:'<path d="M6 6l12 12M18 6L6 18"/>',retur:'<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"/>',light:'<path d="M8 3h8l-1 6H9z"/><path d="M9 9v10a3 3 0 0 0 6 0V9M12 13v2"/>'};
+document.querySelectorAll('i[data-i]').forEach(e=>{const s=e.dataset.s||22;e.outerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[e.dataset.i]+'</svg>'});
+if(location.hash==='#dark')document.documentElement.dataset.theme='dark';
+</script></body></html>
