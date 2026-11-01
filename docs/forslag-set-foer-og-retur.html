@@ -26,7 +26,11 @@ body{background:#d9dce8;margin:0;padding:28px;font-family:Roboto,system-ui,sans-
 .track{background:var(--pri);color:var(--pri-on)}
 .track .big{font-size:28px;font-weight:800}
 .track .btn.tonal{background:#fff3;color:var(--pri-on)}
-.track .btn.white{background:#fff;color:#3d4fd8}
+.track .btn.white{background:var(--pri-on);color:var(--pri)}
+.night{--bg:#10121c;--card:#1c2030;--ton:#2b3152;--on:#eef0ff;--mut:#aab0d6;--pri:#aab6ff;--pri-on:#10121c}
+.rec{display:inline-block;width:10px;height:10px;border-radius:5px;background:currentColor;vertical-align:1px}
+.search i,.btn i,.round i,.pill i{display:inline-flex}
+[data-theme=dark] body{background:#05060a}[data-theme=dark] .cap{color:#eef0ff}[data-theme=dark] .cap small{color:#aab0d6}
 .map{height:430px;border-radius:28px;overflow:hidden;margin:6px 0 10px}
 .arrowcard{display:flex;align-items:center;gap:16px}
 .arrowcard .big{font-size:30px;font-weight:800;line-height:1.1}
@@ -37,7 +41,7 @@ body{background:#d9dce8;margin:0;padding:28px;font-family:Roboto,system-ui,sans-
 <!-- 1: Fund med "Set før" -->
 <div class="col"><div class="cap">1. Du tager et billede<small>Kik kan se, at du har fundet det før</small></div>
 <div class="phone"><main class="page">
- <header class="top"><button class="round">‹</button><span class="muted small">16.42 · ca. 0,02 kr</span><button class="round">🗑</button></header>
+ <header class="top"><button class="round"><i data-i="back"></i></button><span class="muted small">16.42 · ca. 0,02 kr</span><button class="round"><i data-i="trash"></i></button></header>
  <div class="photo"></div>
  <article class="card answer"><div class="kicker">Rav</div><h2>Rav, ca. 3 cm</h2><p class="pre">Et flot, klart stykke rav. Det er forstenet harpiks fra skove, der voksede for 40 millioner år siden.</p></article>
  <section class="card seen"><div class="kick">Set før · 7 gange</div>
@@ -45,40 +49,40 @@ body{background:#d9dce8;margin:0;padding:28px;font-family:Roboto,system-ui,sans-
   <a class="row"><span class="thumb amber" style="filter:hue-rotate(-15deg) brightness(.85)"></span><span class="grow"><b>Rav med insekt?</b><span>2. oktober · Liseleje</span></span></a>
   <div class="center" style="margin-top:8px"><span class="btn text small">Se alle 7 ›</span></div>
  </section>
-</main><nav class="tabbar"><a class="on"><span class="pill">◉</span>Kik</a><a><span class="pill">▦</span>Dage</a><a><span class="pill">⋯</span>Mere</a></nav></div></div>
+</main><nav class="tabbar"><a class="on"><span class="pill"><i data-i="eye"></i></span>Kik</a><a><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
 
 <!-- 2: Søg i fund -->
 <div class="col"><div class="cap">2. Søg i alle dine fund<small>Øverst på "Dage". Virker uden net og er gratis</small></div>
 <div class="phone"><main class="page">
  <header class="top"><h1>Dage</h1></header>
- <div class="search"><span>🔍</span><span class="grow">rav</span><span class="muted">✕</span></div>
+ <div class="search"><i data-i="search"></i><span class="grow">rav</span><span class="muted"><i data-i="close"></i></span></div>
  <div class="sec">7 fund</div>
  <a class="row"><span class="thumb amber"></span><span class="grow"><b>Rav, ca. 3 cm</b><span>I dag · Tisvilde Strand</span></span></a>
  <a class="row"><span class="thumb amber" style="filter:brightness(.9)"></span><span class="grow"><b>Rav, ca. 2 cm</b><span>14. oktober · Tisvilde Strand</span></span></a>
  <a class="row"><span class="thumb amber" style="filter:hue-rotate(-15deg) brightness(.85)"></span><span class="grow"><b>Rav med insekt?</b><span>2. oktober · Liseleje</span></span></a>
  <a class="row"><span class="thumb amber" style="filter:saturate(.6)"></span><span class="grow"><b>Rav eller glas?</b><span>2. oktober · Liseleje</span></span></a>
  <a class="row"><span class="thumb amber" style="filter:brightness(1.1)"></span><span class="grow"><b>Rav, lille</b><span>28. september · Hornbæk</span></span></a>
-</main><nav class="tabbar"><a><span class="pill">◉</span>Kik</a><a class="on"><span class="pill">▦</span>Dage</a><a><span class="pill">⋯</span>Mere</a></nav></div></div>
+</main><nav class="tabbar"><a><span class="pill"><i data-i="eye"></i></span>Kik</a><a class="on"><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
 
 <!-- 3: Spor kører -->
 <div class="col"><div class="cap">3. Start et spor ved bilen<small>Kik husker vejen, mens du går</small></div>
 <div class="phone"><main class="page">
  <header class="top"><h1>Kik</h1></header>
  <section class="card track">
-  <div class="small" style="opacity:.85;font-weight:700">● SPOR KØRER</div>
+  <div class="small" style="opacity:.85;font-weight:700"><span class="rec"></span> SPOR KØRER</div>
   <div class="big">2,4 km · 1 t 12 min</div>
   <div class="small" style="opacity:.85">Start: P-pladsen, Tisvilde Strand</div>
-  <div class="actions" style="margin-bottom:0"><span class="btn white">↩ Find retur</span><span class="btn tonal">Stop</span></div>
+  <div class="actions" style="margin-bottom:0"><span class="btn white"><i data-i="retur"></i> Find retur</span><span class="btn tonal">Stop</span></div>
  </section>
  <div class="chips"><button class="chip on">Hvad er det?</button><button class="chip">Oversæt</button><button class="chip">Pris</button><button class="chip">Hvordan?</button></div>
- <button class="shoot" style="max-height:250px">📷<span>Tag billede</span></button>
- <div class="askbar"><span class="round">🎙</span><span class="muted">… eller spørg om stedet</span></div>
-</main><nav class="tabbar"><a class="on"><span class="pill">◉</span>Kik</a><a><span class="pill">▦</span>Dage</a><a><span class="pill">⋯</span>Mere</a></nav></div></div>
+ <button class="shoot" style="max-height:250px"><i data-i="camera" data-s="44"></i><span>Tag billede</span></button>
+ <div class="askbar"><span class="round"><i data-i="mic"></i></span><span class="muted">… eller spørg om stedet</span></div>
+</main><nav class="tabbar"><a class="on"><span class="pill"><i data-i="eye"></i></span>Kik</a><a><span class="pill"><i data-i="days"></i></span>Dage</a><a><span class="pill"><i data-i="more"></i></span>Mere</a></nav></div></div>
 
 <!-- 4: Find retur (mørk) -->
 <div class="col"><div class="cap">4. Find retur, når det er mørkt<small>Samme vej tilbage, med pil og afstand</small></div>
-<div class="phone" data-dark style="--bg:#10121c;--card:#1c2030;--ton:#2b3152;--on:#eef0ff;--mut:#aab0d6;--pri:#aab6ff;--pri-on:#10121c"><main class="page">
- <header class="top"><button class="round">‹</button><h1 class="h-small grow">Find retur</h1></header>
+<div class="phone night"><main class="page">
+ <header class="top"><button class="round"><i data-i="back"></i></button><h1 class="h-small grow">Find retur</h1></header>
  <div class="map"><svg viewBox="0 0 340 430" width="100%" height="100%">
   <rect width="340" height="430" fill="#1a2233"/>
   <path d="M0 0H340V430H210C190 380 170 330 150 290C130 250 120 200 95 150C75 110 50 60 0 30Z" fill="#232b22"/>
@@ -92,7 +96,11 @@ body{background:#d9dce8;margin:0;padding:28px;font-family:Roboto,system-ui,sans-
  </svg></div>
  <section class="card arrowcard"><span class="ring"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(25deg)"><path d="M12 20V4M5 11l7-7 7 7"/></svg></span>
   <span class="grow"><span class="big">1,9 km</span><br><span class="muted">til bilen · ca. 25 min<br>Følg prikkerne langs stranden</span></span></section>
- <div class="actions"><span class="btn tonal">🔦 Lommelygte</span><span class="btn tonal">Stop spor</span></div>
+ <div class="actions"><span class="btn tonal"><i data-i="light"></i> Lommelygte</span><span class="btn tonal"><i data-i="stop"></i> Stop spor</span></div>
 </main></div></div>
 
-</div></body></html>
+</div><script>
+const P={camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',back:'<path d="M15 5l-7 7 7 7"/>',trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',days:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',more:'<circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/>',stop:'<rect x="6" y="6" width="12" height="12" rx="2"/>',search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>',close:'<path d="M6 6l12 12M18 6L6 18"/>',retur:'<path d="M9 7L4 12l5 5"/><path d="M4 12h10a6 6 0 0 1 0 12h-2" transform="translate(0 -6)"/>',light:'<path d="M8 3h8l-1 6H9z"/><path d="M9 9v10a3 3 0 0 0 6 0V9M12 13v2"/>'};
+document.querySelectorAll('i[data-i]').forEach(e=>{const s=e.dataset.s||22;e.outerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+P[e.dataset.i]+'</svg>'});
+if(location.hash==='#dark')document.documentElement.dataset.theme='dark';
+</script></body></html>

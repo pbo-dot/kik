@@ -32,7 +32,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Endnu ikke prøvet på telefonen: ægte Claude-svar på rigtige billeder (kvalitet og pris pr. billede), kamera, sted, tale, dansk oplæsning og Del → Dagbog.
 - Skitsen, som første udgave er bygget efter: `docs/forslag-kig.png`.
 - Rettet: afbrudte svar (`fixInterrupted` ved start), "Prøv igen" for spørgsmål uden billede, autooplæsning kun af nye svar.
-- Til godkendelse (ikke bygget): `docs/forslag-set-foer-og-retur.png`.
+- Til godkendelse (ikke bygget): `docs/forslag-set-foer-og-retur.png` og `-mork.png` (kilde: `.html`).
   - **Har jeg set den før?**: "Set før · N gange" under svaret (match på navn, kun på telefonen) og søgefelt øverst på Dage.
   - **Find retur** (til ravjagt, hjem i mørke): "Start spor" ved bilen, `watchPosition` + Wake Lock mens Kik er åben, kort med OpenStreetMap/Leaflet, pil og afstand til start, lommelygte-knap. Ærligt: browseren sporer ikke med slukket skærm; huller tegnes som lige streger, pilen til start virker altid.
 
@@ -54,7 +54,10 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 
 - Skriv på dansk, kort og i almindeligt sprog. Ejeren er ikke programmør.
 - Nye funktioner drøftes og godkendes (gerne med et billede først), før de bygges. Fejlrettelser må laves med det samme.
-- Undersøg kendte løsninger, før noget nyt og ukendt bygges, og vælg den mest gennemprøvede med åben licens.
+- **Nye, ukendte funktioner:** Skriv ikke fra bunden først. Undersøg kendte løsninger (open source på GitHub, velholdte biblioteker, officiel dokumentation), sammenlign kort 2–3 fremgangsmåder i forslaget, og vælg den mest gennemprøvede. Kun åben licens, og hold appen let.
+- **Forslag undervejs:** Kom løbende med korte forslag, når noget gentager sig, kan gå galt eller kan gøres nemmere. Giv en anbefaling og en rækkefølge. Bygges først efter ejerens ja (fejlrettelser dog med det samme).
+- **Gennemgang en gang imellem:** Når ejeren beder om det, så tag en rundtur i hele appen med friske skærmbilleder og giv en ærlig vurdering og 3–5 forslag i anbefalet rækkefølge.
+- Ejerens design- og arbejdsregler er fælles for alle ejerens apps; Dagbogs CLAUDE.md (pbo-dot/dagbog) er forbilledet.
 - Sig til med link, når en ændring er ude, og vær ærlig om, hvad der kun kan testes på telefonen (kamera, sted, tale, oplæsning, deling).
 
 ## Design (top-design anno 2026)
@@ -64,6 +67,8 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Store trykflader (mindst 44–48 px), runde knapper: fyldt, tonal og tekst.
 - Kort uden kanter, store runde hjørner, god luft, ensartede streg-ikoner (`Icon` i `src/ui.tsx`).
 - Korte tekster. Bløde overgange, og respektér "reducer bevægelse".
+- Ingen emojis som ikoner, heller ikke i udkast.
+- Vis altid et visuelt forslag i både lys og mørk tilstand (`docs/forslag-*.png`), før nye skærme eller større ændringer bygges.
 
 ## Senere (idéer, ikke bygget)
 
