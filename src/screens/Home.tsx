@@ -5,7 +5,7 @@ import { newPhoto, newQuestion } from '../lib/actions';
 import { dayFinds, dayOf, type Mode } from '../lib/db';
 import { canListen, listen } from '../lib/device';
 import { getApiKey } from '../lib/settings';
-import { getTrack, onTrack, startTrack, stopTrack, trackKm } from '../lib/track';
+import { getTrack, onTrack, stopTrack, trackKm } from '../lib/track';
 import { Icon, go, time, useData } from '../ui';
 
 const MODE_KEY = 'kik.mode';
@@ -75,7 +75,7 @@ export function Home() {
         </a>
       )}
 
-      <TrackCard onError={setErr} />
+      <TrackCard />
 
       <div className="chips" role="radiogroup" aria-label="Hvad vil du vide?">
         {(Object.keys(MODES) as Mode[]).map((m) => (
@@ -124,10 +124,9 @@ export function Home() {
   );
 }
 
-/** Spor til "Find retur": en knap, eller et kort, mens sporet kører. */
-function TrackCard({ onError }: { onError: (e: string) => void }) {
+/** Kort og spor: en knap, eller et kort, mens sporet kører. */
+function TrackCard() {
   const [now, setNow] = useState(() => Date.now());
-  const [starting, setStarting] = useState(false);
   useEffect(() => {
     const off = onTrack(() => setNow(Date.now()));
     const t = setInterval(() => setNow(Date.now()), 30_000);
@@ -136,15 +135,7 @@ function TrackCard({ onError }: { onError: (e: string) => void }) {
   const t = getTrack();
 
   if (!t) {
-    return (
-      <div className="center">
-        <button className="btn tonal" disabled={starting} onClick={async () => {
-          setStarting(true);
-          onError('');
-          try { await startTrack(); } catch (e) { onError((e as Error).message); } finally { setStarting(false); }
-        }}><Icon name="pin" /> {starting ? 'Finder dig …' : 'Start spor'}</button>
-      </div>
-    );
+    return <div className="center"><a className="btn tonal" href="#/kort"><Icon name="map" /> Kort</a></div>;
   }
   const min = Math.max(0, Math.round((now - t.startedAt) / 60_000));
   const dur = min < 60 ? `${min} min` : `${Math.floor(min / 60)} t ${min % 60} min`;
@@ -155,7 +146,7 @@ function TrackCard({ onError }: { onError: (e: string) => void }) {
       <div className="big">{d < 1 ? `${Math.round(d * 1000)} m` : `${d.toLocaleString('da-DK', { maximumFractionDigits: 1 })} km`} · {dur}</div>
       <div className="small">Startede kl. {time(t.startedAt)}</div>
       <div className="actions">
-        <a className="btn on-pri" href="#/retur"><Icon name="retur" /> Find retur</a>
+        <a className="btn on-pri" href="#/kort"><Icon name="map" /> Kort</a>
         <button className="btn ghost" onClick={() => { if (confirm('Stop sporet? Vejen tilbage glemmes.')) stopTrack(); }}>Stop</button>
       </div>
     </section>

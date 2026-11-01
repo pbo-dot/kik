@@ -19,8 +19,8 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Tale: `SpeechRecognition` (da-DK) til at spørge, `speechSynthesis` til oplæsning ("Læs svaret op med det samme" under Mere).
 - "Del → Dagbog" bruger `navigator.share` med tekst; Dagbog modtager delt tekst som en ny samtale. Dagbog skal ikke ændres.
 - **Har jeg set den før?** (`src/lib/seen.ts`): under svaret vises "Set før · N gange" (match på kernen af navnet, `baseName`), og "Se alle" åbner søgningen (`#/soeg/<ord>`). Søgefelt øverst på Dage søger i navn, kategori, sted, svar og samtale. Kun på telefonen, gratis. `hvor` (stednavn) mangler i de første fund.
-- **Find retur** (`src/lib/track.ts`, `src/screens/Retur.tsx`, rute `#/retur`): "Start spor" på forsiden gemmer start og punkter (`watchPosition`, mindst 8 m mellem punkter, upræcise over 40 m springes over) i `localStorage["kik.track"]` og holder skærmen tændt (Wake Lock). Fortsætter, når Kik åbnes igen. Kort med Leaflet + OpenStreetMap (hentes først, når skærmen åbnes; mørkt kort via CSS-filter; brikker gemmes 30 dage i servicearbejderen, cache `kort`), pil mod et punkt ca. 40 m tilbage ad sporet (drejer med kompasset), afstand og tid tilbage ad sporet (4 km/t), lommelygte (`torch` i `device.ts`). Browseren kan ikke måle med slukket skærm: huller bliver lige streger. CSP i `index.html` tillader `tile.openstreetmap.org`; kortet sender kun appens adresse som henviser (krav fra OpenStreetMap).
-- Browsertest for Find retur: `node e2e/retur.e2e.cjs` (falsk GPS-tur ved Tisvilde, falske kortbrikker).
+- **Kort og Find retur** (`src/lib/track.ts`, `src/screens/Kort.tsx`, rute `#/kort`, `#/retur` åbner med pilen): knappen "Kort" på forsiden (eller på sporkortet, mens et spor kører). Kortet følger dig (`follow()` måler sted, mens kortet er åbent, også uden spor); flytter man kortet selv, stopper det, og en rund knap følger igen. Uden spor: "Start spor". Med spor: "gået" og "siden start", "Find retur" (zoomer ud til dig og start, pil, afstand og tid tilbage ad sporet, 4 km/t) og "Skjul pil"; Stop som rund knap i toppen. Sporet gemmes i `localStorage["kik.track"]` (`watchPosition`, mindst 8 m mellem punkter, upræcise over 40 m springes over), skærmen holdes tændt (Wake Lock), og det fortsætter, når Kik åbnes igen. Leaflet + OpenStreetMap (hentes først, når kortet åbnes; mørkt kort via CSS-filter; brikker gemmes 30 dage, cache `kort`). Lommelygte (`torch` i `device.ts`). Browseren kan ikke måle med slukket skærm: huller bliver lige streger. CSP i `index.html` tillader `tile.openstreetmap.org`; kortet sender kun appens adresse som henviser (krav fra OpenStreetMap).
+- Browsertest for Kort og Find retur: `node e2e/retur.e2e.cjs` (falsk GPS-tur ved Tisvilde, falske kortbrikker; tjekker at kortet følger, "følg mig"-knappen og at start ses ved Find retur).
 - Forbrug: skøn ud fra listepriser (`track` i `ai.ts`), pr. fund og pr. måned under Mere.
 
 ## Byg og udgivelse
@@ -38,6 +38,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Udkast: `docs/forslag-set-foer-og-retur.png` og `-mork.png` (kilde: `.html`).
   - **Har jeg set den før?**: bygget.
   - **Find retur**: bygget. Ikke prøvet på telefonen endnu (GPS, kompas, lommelygte, skærm tændt).
+- Udkast: `docs/forslag-kort.png` og `-mork.png`: kort, der følger dig. Bygget.
 
 ## Om ejeren
 

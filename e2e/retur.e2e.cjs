@@ -12,16 +12,30 @@ const p=await ctx.newPage();
 p.on('pageerror',e=>console.log('fejl:',e.message));
 await p.route('https://tile.openstreetmap.org/**',r=>r.fulfill({status:200,contentType:'image/png',body:tile}));
 await p.goto('http://localhost:4173/');await p.waitForTimeout(400);
-await p.getByText('Start spor').click();await p.waitForSelector('text=Spor kører');
+// Uden spor: Kort viser, hvor du er
+await p.locator('a.btn',{hasText:'Kort'}).click();await p.waitForSelector('.me-dot');
+await p.getByText('Start spor').click();await p.waitForSelector('.stats');
 for (const [lat,lon] of walk.slice(1)) { await ctx.setGeolocation({latitude:lat,longitude:lon,accuracy:8}); await p.waitForTimeout(250); }
-await p.waitForTimeout(300);
-await p.screenshot({path:`${SP}/8-spor-${scheme}.png`});
-console.log(scheme,'kort:',(await p.locator('.track .big').innerText()));
-await p.getByText('Find retur').click();await p.waitForSelector('.way .big');await p.waitForTimeout(800);
+await p.waitForTimeout(500);
+console.log(scheme,'gået:',(await p.locator('.stats').innerText()).replace(/\n/g,' '));
+await p.screenshot({path:`${SP}/9-kort-${scheme}.png`});
+// Følger kortet med? Prikken skal være nær midten
+const mid=await p.evaluate(()=>{const m=document.querySelector('.map').getBoundingClientRect();const d=document.querySelector('.me-dot').getBoundingClientRect();return [Math.round(d.x+d.width/2-m.x-m.width/2),Math.round(d.y+d.height/2-m.y-m.height/2)]});
+console.log(scheme,'prik fra midten (px):',mid);
+const box=await p.locator('.map').boundingBox();await p.mouse.move(box.x+150,box.y+150);await p.mouse.down();await p.mouse.move(box.x+60,box.y+90,{steps:5});await p.mouse.up();
+console.log(scheme,'flyttet selv, knap vist:',await p.locator('.fab').isVisible());
+await p.getByText('Find retur').click();await p.waitForSelector('.way .big');await p.waitForTimeout(500);
 console.log(scheme,'retur:',(await p.locator('.way').innerText()).replace(/\n/g,' | '));
-await p.screenshot({path:`${SP}/9-retur-${scheme}.png`});
+await p.screenshot({path:`${SP}/10-retur-${scheme}.png`});
+const startVis=await p.evaluate(()=>{const m=document.querySelector('.map').getBoundingClientRect();const d=document.querySelector('.start-dot').getBoundingClientRect();return d.x>=m.x&&d.right<=m.right&&d.y>=m.y&&d.bottom<=m.bottom});
+console.log(scheme,'start synlig ved retur:',startVis);
+await p.locator('.fab').click();await p.waitForTimeout(400);
+console.log(scheme,'følg mig igen, knap væk:',!(await p.locator('.fab').count()));
+await p.getByText('Skjul pil').click();await p.waitForSelector('.stats');
+await p.goto('http://localhost:4173/#/');await p.waitForSelector('text=Spor kører');
+await p.screenshot({path:`${SP}/8-spor-${scheme}.png`});
 // Genåbn appen: sporet skal stadig være der
-await p.reload();await p.waitForSelector('.way .big');
+await p.reload();await p.waitForSelector('text=Spor kører');
 console.log(scheme,'efter genindlæsning: ok');
 await ctx.close();}
 await b.close();})().catch(e=>{console.error(e);process.exit(1)});

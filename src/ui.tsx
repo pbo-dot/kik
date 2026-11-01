@@ -48,6 +48,8 @@ const paths: Record<string, ReactNode> = {
   refresh: <path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5" />,
   search: <><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4 4" /></>,
   close: <path d="M6 6l12 12M18 6L6 18" />,
+  map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" /><path d="M9 4v14M15 6v14" /></>,
+  locate: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>,
   up: <path d="M12 20V4M5 11l7-7 7 7" />,
   retur: <><path d="M9 5L4 10l5 5" /><path d="M4 10h10a6 6 0 0 1 0 12h-3" /></>,
   light: <><path d="M8 3h8l-1 6H9z" /><path d="M9 9v10a3 3 0 0 0 6 0V9M12 13v2" /></>,

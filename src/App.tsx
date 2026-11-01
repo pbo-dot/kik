@@ -7,7 +7,7 @@ import { More } from './screens/More';
 import { TabBar, useRoute } from './ui';
 
 // Kortet er tungt, så det hentes først, når man skal bruge det
-const Retur = lazy(() => import('./screens/Retur'));
+const Kort = lazy(() => import('./screens/Kort'));
 
 export default function App() {
   const [page, arg] = useRoute();
@@ -17,7 +17,7 @@ export default function App() {
   else if (page === 'dag' && arg) { view = <Day key={arg} day={arg} />; tab = 'dage'; }
   else if (page === 'dage') { view = <Days />; tab = 'dage'; }
   else if (page === 'soeg') { view = <Days key={arg} q={arg ?? ''} />; tab = 'dage'; }
-  else if (page === 'retur') view = <Suspense fallback={<main className="page" />}><Retur /></Suspense>;
+  else if (page === 'kort' || page === 'retur') view = <Suspense fallback={<main className="page" />}><Kort key={page} back={page === 'retur'} /></Suspense>;
   else if (page === 'mere') { view = <More />; tab = 'mere'; }
   else view = <Home />;
   return (

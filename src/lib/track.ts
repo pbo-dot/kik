@@ -14,6 +14,7 @@ const WALK_KMH = 4; // gåtempo på strand og sti
 let track: Track | null = load();
 let here: Place | null = null;
 let watchId: number | null = null;
+let viewers = 0; // kortet er åbent: følg stedet, også uden spor
 let lock: { release(): Promise<void> } | null = null;
 const listeners = new Set<() => void>();
 
@@ -92,9 +93,23 @@ export function startTrack(): Promise<void> {
   });
 }
 
-export function stopTrack() {
+function unwatch() {
   if (watchId != null) navigator.geolocation.clearWatch(watchId);
   watchId = null;
+}
+
+/** Kortet viser, hvor du er, mens det er åbent, også når der ikke kører et spor. */
+export function follow(): () => void {
+  viewers++;
+  watch();
+  return () => {
+    viewers = Math.max(0, viewers - 1);
+    if (!track && !viewers) unwatch();
+  };
+}
+
+export function stopTrack() {
+  if (!viewers) unwatch();
   void lock?.release().catch(() => undefined);
   lock = null;
   track = null;
