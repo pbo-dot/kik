@@ -23,3 +23,4 @@ dist-ssr
 *.sln
 *.sw?
 *.zip
+e2e/out/

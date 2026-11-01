@@ -22,8 +22,29 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 
 ## Byg og udgivelse
 
-- `npm run build` og `npm run lint` før commit. Test i browser med `npx vite preview` og Playwright med falsk Claude-API (`page.route('https://api.anthropic.com/**')`), både lys og mørk tilstand.
+- `npm run build` og `npm run lint` før commit.
+- Browsertest: `e2e/kik.e2e.cjs` (Playwright med falsk Claude-API via `page.route('https://api.anthropic.com/**')`, ingen nøgle eller penge). Kør `npx vite preview --port 4173` og så `node e2e/kik.e2e.cjs`. Den gennemgår billede → svar → Fortæl mere → spørg → spørgsmål uden billede → Skriv dagen → Mere, i lys og mørk tilstand, og gemmer skærmbilleder i `e2e/out/` (ikke i git).
 - Læg ændringer på `main`. GitHub Actions udgiver til GitHub Pages (Settings → Pages → Source: GitHub Actions).
+
+## Status (1. november 2026)
+
+- Første udgave er bygget og skubbet. Ejeren skulle slå Pages til (Source: GitHub Actions) og køre udgivelsen igen. Tjek, at https://pbo-dot.github.io/kik/ virker.
+- Endnu ikke prøvet på telefonen: ægte Claude-svar på rigtige billeder (kvalitet og pris pr. billede), kamera, sted, tale, dansk oplæsning og Del → Dagbog.
+- Skitsen, som første udgave er bygget efter: `docs/forslag-kig.png`.
+
+## Om ejeren
+
+- Tester alt på sin Pixel (Chrome). Har også appene Dagbog (pbo-dot/dagbog, under test, må ikke ændres for Kiks skyld) og Lukker.
+- Kan lide små trin, en anbefaling og et billede først. Claude foreslår, ejeren godkender.
+- Kik startede som en "turguide i naturen", men ejeren ville have den bredere: til alt, man ser ude (by, ferie, butik, hjemme).
+
+## Færdig-tjekliste (før ejeren får besked)
+
+- [ ] `npm run build` og `npm run lint` uden fejl.
+- [ ] `node e2e/kik.e2e.cjs` kørt, og skærmbillederne set (lys og mørk).
+- [ ] CLAUDE.md opdateret, hvis noget nyt er bygget.
+- [ ] Skubbet til `main`, og "Udgiv på GitHub Pages" er grøn.
+- [ ] Ejeren har fået linket og en ærlig besked om, hvad der kun kan testes på telefonen.
 
 ## Arbejdsform med ejeren
 
