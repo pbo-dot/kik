@@ -161,3 +161,6 @@ h3 { font-size: 17px; margin: 0 0 10px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Loggen under Mere */
+.logbox { margin: 8px 0 0; max-height: 320px; overflow: auto; padding: 12px; border-radius: 16px; background: var(--ton); color: var(--on); font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }

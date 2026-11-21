@@ -44,6 +44,11 @@ const EN: Record<string, string> = {
   'Sprog / Language': 'Language / Sprog', 'Knapper og svar på det valgte sprog.': 'Buttons and answers in the chosen language.',
   'Forbrug': 'Usage', 'Denne måned: ca. {kr}': 'This month: approx. {kr}', 'Et skøn ud fra listepriserne.': 'An estimate based on list prices.',
   'Slet alle fund': 'Delete all finds', 'Slet alle billeder og svar på telefonen?': 'Delete all photos and answers on this phone?', 'Version {v}': 'Version {v}',
+  // Log
+  'Log': 'Log', '{n} linjer gemt på telefonen.': '{n} lines saved on this phone.', 'Del log med Claude': 'Share log with Claude',
+  'Vis de seneste': 'Show latest', 'Skjul': 'Hide', 'Ryd log': 'Clear log', 'Ryd loggen?': 'Clear the log?',
+  'Gem filen på Drev, og sig til Claude.': 'Save the file to Drive and tell Claude.', 'Filen er hentet til Downloads.': 'The file was saved to Downloads.',
+  'Uden nøgle og billeder.': 'Without key or photos.',
   'under 1 øre': 'less than 1 øre',
   // Kort og Find retur
   'Stop spor': 'Stop track', 'Følg mig': 'Follow me', 'Kort over, hvor du er og har gået': 'Map of where you are and have walked',

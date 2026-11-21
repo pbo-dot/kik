@@ -1,6 +1,7 @@
 // Mere: nøgle, model, oplæsning, udseende og forbrug.
 import { langChanged, t } from '../lib/i18n';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { clearLog, getLog, lineText, onLog, shareLog } from '../lib/log';
 import { AIError, testKey } from '../lib/ai';
 import { deleteAll } from '../lib/db';
 import { MODELS, getApiKey, getSettings, krText, monthUsage, saveSettings, setApiKey, type Settings } from '../lib/settings';
@@ -73,10 +74,42 @@ export function More() {
         <p className="muted small">{t('Et skøn ud fra listepriserne.')}</p>
       </section>
 
+      <LogCard />
+
       <div className="center">
         <button className="btn text danger" onClick={async () => { if (confirm(t('Slet alle billeder og svar på telefonen?'))) await deleteAll(); }}>{t('Slet alle fund')}</button>
         <p className="muted small">{t('Version {v}', { v: __BUILD__ })}</p>
       </div>
     </main>
+  );
+}
+
+/** Loggen til fejlfinding: del den som fil (Drev), så Claude kan se, hvad der skete på telefonen. */
+function LogCard() {
+  const [n, setN] = useState(getLog().length);
+  const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState('');
+  useEffect(() => onLog(() => setN(getLog().length)), []);
+  async function share() {
+    setMsg('');
+    const r = await shareLog();
+    setMsg(r === 'delt' ? t('Gem filen på Drev, og sig til Claude.') : r === 'hentet' ? t('Filen er hentet til Downloads.') : '');
+  }
+  return (
+    <section className="card form">
+      <h3>{t('Log')}</h3>
+      <p className="muted small">{t('{n} linjer gemt på telefonen.', { n })} {t('Uden nøgle og billeder.')}</p>
+      <div className="actions">
+        <button className="btn filled" onClick={share} disabled={!n}>{t('Del log med Claude')}</button>
+        <button className="btn tonal" onClick={() => setOpen(!open)} disabled={!n}>{open ? t('Skjul') : t('Vis de seneste')}</button>
+      </div>
+      {msg && <p className="muted small">{msg}</p>}
+      {open && (
+        <>
+          <pre className="logbox">{getLog().slice(-40).reverse().map(lineText).join('\n')}</pre>
+          <button className="btn text danger" onClick={() => { if (confirm(t('Ryd loggen?'))) clearLog(); }}>{t('Ryd log')}</button>
+        </>
+      )}
+    </section>
   );
 }

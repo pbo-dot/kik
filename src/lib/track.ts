@@ -3,6 +3,7 @@
 // Huller (fx hvis skærmen alligevel slukkes) bliver bare til lige streger, og vejen til start virker altid.
 import { km, type Place } from './device';
 import { t } from './i18n';
+import { errText, log } from './log';
 
 export type Pt = [lat: number, lon: number, t: number];
 export interface Track { startedAt: number; pts: Pt[] } // pts[0] er start
@@ -37,40 +38,64 @@ export function onTrack(l: () => void): () => void {
 export const getTrack = () => track;
 export const getHere = () => here;
 
+// Til loggen: målinger siden sidste opsummering, og hvornår den sidste kom
+const stat = { fixes: 0, kept: 0, inexact: 0, bestAcc: Infinity, worstAcc: 0, lastFix: 0 };
+const SUMMARY_EVERY = 30; // en linje pr. 30 målinger
+
 function onPos(p: GeolocationPosition) {
   here = { lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy };
+  const nowMs = Date.now();
+  // Hul i målingerne (skærmen slukket, appen skjult, ingen GPS)
+  if (stat.lastFix && nowMs - stat.lastFix > 30_000) log(`spor: ingen målinger i ${Math.round((nowMs - stat.lastFix) / 1000)} s${document.hidden ? ' (appen er skjult)' : ''}`, 'warn');
+  stat.lastFix = nowMs;
+  stat.fixes++;
+  stat.bestAcc = Math.min(stat.bestAcc, here.acc);
+  stat.worstAcc = Math.max(stat.worstAcc, here.acc);
   if (track && here.acc <= MAX_ACC_M) {
     const last = track.pts.at(-1);
     if (!last || km({ lat: last[0], lon: last[1] }, here) * 1000 >= MIN_STEP_M) {
-      track.pts.push([here.lat, here.lon, Date.now()]);
+      track.pts.push([here.lat, here.lon, nowMs]);
+      stat.kept++;
       save();
     }
-  }
+  } else if (track) stat.inexact++;
+  if (stat.fixes >= SUMMARY_EVERY) summary();
   changed();
+}
+
+function summary() {
+  if (!stat.fixes) return;
+  log(`spor: ${stat.fixes} målinger (±${Math.round(stat.bestAcc)}–${Math.round(stat.worstAcc)} m), ${stat.kept} gemt, ${stat.inexact} for upræcise${track ? ` · i alt ${track.pts.length} punkter, ${trackKm(track).toFixed(2)} km` : ''}`);
+  Object.assign(stat, { fixes: 0, kept: 0, inexact: 0, bestAcc: Infinity, worstAcc: 0 });
 }
 
 async function keepAwake() {
   const wl = (navigator as Navigator & { wakeLock?: { request(t: 'screen'): Promise<{ release(): Promise<void> }> } }).wakeLock;
+  if (!wl) log('skærm: telefonen kan ikke holde skærmen tændt (ingen Wake Lock)', 'warn');
   if (!wl || lock || document.hidden) return;
   try {
     lock = await wl.request('screen');
-    (lock as unknown as EventTarget).addEventListener?.('release', () => { lock = null; });
-  } catch { lock = null; }
+    log('skærm: holdes tændt', 'ok');
+    (lock as unknown as EventTarget).addEventListener?.('release', () => { lock = null; if (track) log('skærm: må slukke igen (appen skjult eller låst)'); });
+  } catch (e) { lock = null; log(`skærm: kunne ikke holdes tændt · ${errText(e)}`, 'warn'); }
 }
 
 // Skærmlåsen slippes, når appen skjules; tag den igen, når man kommer tilbage
 document.addEventListener('visibilitychange', () => {
+  if (track && document.hidden) summary();
   if (track && !document.hidden) void keepAwake();
 });
 
 function watch() {
   if (watchId != null || !('geolocation' in navigator)) return;
-  watchId = navigator.geolocation.watchPosition(onPos, () => undefined, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30_000 });
+  log(`sted: følger med (${track ? 'spor' : 'kort'})`);
+  watchId = navigator.geolocation.watchPosition(onPos, (e) => log(`sted: fejl ${e.code} under følg (${e.message})`, 'warn'), { enableHighAccuracy: true, maximumAge: 5000, timeout: 30_000 });
 }
 
 /** Kører der et spor fra sidst, fortsættes det, når Kik åbnes. */
 export function resumeTrack() {
   if (!track) return;
+  log(`spor: fortsætter fra ${new Date(track.startedAt).toLocaleTimeString('da-DK')} (${track.pts.length} punkter)`);
   watch();
   void keepAwake();
 }
@@ -81,6 +106,7 @@ export function startTrack(): Promise<void> {
   return new Promise((res, rej) => {
     navigator.geolocation.getCurrentPosition(
       (p) => {
+        log(`spor: startet ved ±${Math.round(p.coords.accuracy)} m`, 'ok');
         track = { startedAt: Date.now(), pts: [[p.coords.latitude, p.coords.longitude, Date.now()]] };
         save();
         onPos(p);
@@ -88,7 +114,7 @@ export function startTrack(): Promise<void> {
         void keepAwake();
         res();
       },
-      (e) => rej(new Error(e.code === e.PERMISSION_DENIED ? t('Kik må ikke se, hvor du er. Tillad sted i Chrome.') : t('Kunne ikke finde dig. Prøv igen udenfor.'))),
+      (e) => { log(`spor: kunne ikke starte, fejl ${e.code} (${e.message})`, 'warn'); rej(new Error(e.code === e.PERMISSION_DENIED ? t('Kik må ikke se, hvor du er. Tillad sted i Chrome.') : t('Kunne ikke finde dig. Prøv igen udenfor.'))); },
       { enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 },
     );
   });
@@ -110,6 +136,8 @@ export function follow(): () => void {
 }
 
 export function stopTrack() {
+  summary();
+  if (track) log(`spor: stoppet efter ${Math.round((Date.now() - track.startedAt) / 60000)} min, ${track.pts.length} punkter, ${trackKm(track).toFixed(2)} km`, 'ok');
   if (!viewers) unwatch();
   void lock?.release().catch(() => undefined);
   lock = null;
@@ -161,11 +189,15 @@ export function wayBack(t: Track, me: { lat: number; lon: number }): { km: numbe
 
 /** Hvilken vej telefonen peger (grader, 0 = nord), hvis telefonen har kompas. */
 export function onHeading(cb: (deg: number) => void): () => void {
+  let got = 0, raw = 0; // til loggen: målinger med og uden retning
   const h = (e: DeviceOrientationEvent & { webkitCompassHeading?: number }) => {
-    if (e.webkitCompassHeading != null) cb(e.webkitCompassHeading);
-    else if (e.absolute && e.alpha != null) cb((360 - e.alpha) % 360);
+    raw++;
+    if (e.webkitCompassHeading != null) { got++; cb(e.webkitCompassHeading); }
+    else if (e.absolute && e.alpha != null) { got++; cb((360 - e.alpha) % 360); }
   };
   const ev = 'ondeviceorientationabsolute' in window ? 'deviceorientationabsolute' : 'deviceorientation';
+  log(`kompas: lytter (${ev})`);
+  const check = setTimeout(() => log(got ? `kompas: virker (${got} retninger på 5 s)` : `kompas: ingen retning på 5 s (${raw} målinger uden nord; pilen følger så kun sporet)`, got ? 'ok' : 'warn'), 5000);
   window.addEventListener(ev, h as EventListener);
-  return () => window.removeEventListener(ev, h as EventListener);
+  return () => { clearTimeout(check); window.removeEventListener(ev, h as EventListener); };
 }

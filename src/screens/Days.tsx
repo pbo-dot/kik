@@ -7,6 +7,7 @@ import { km } from '../lib/device';
 import { searchFinds } from '../lib/seen';
 import { krText } from '../lib/settings';
 import { FindRow, Icon, dayLabel, time, useData } from '../ui';
+import { errText, log } from '../lib/log';
 
 export function Days({ q: start = '' }: { q?: string }) {
   const finds = useData(allFinds, []);
@@ -77,9 +78,12 @@ function plainList(finds: Find[], label: string): string {
 
 async function share(text: string): Promise<string> {
   if (navigator.share) {
-    try { await navigator.share({ text }); return ''; } catch (e) { if ((e as Error).name === 'AbortError') return ''; }
-  }
-  try { await navigator.clipboard.writeText(text); return t('Kopieret. Sæt den ind i Dagbog.'); } catch { return t('Kunne ikke dele.'); }
+    try { await navigator.share({ text }); log(`del → dagbog: delt (${text.length} tegn)`, 'ok'); return ''; } catch (e) {
+      if ((e as Error).name === 'AbortError') { log('del → dagbog: afbrudt'); return ''; }
+      log(`del → dagbog: fejl · ${errText(e)}`, 'warn');
+    }
+  } else log('del → dagbog: telefonen kan ikke dele, kopierer i stedet', 'warn');
+  try { await navigator.clipboard.writeText(text); return t('Kopieret. Sæt den ind i Dagbog.'); } catch (e) { log(`del → dagbog: kunne heller ikke kopiere · ${errText(e)}`, 'fejl'); return t('Kunne ikke dele.'); }
 }
 
 export function Day({ day }: { day: string }) {

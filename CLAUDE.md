@@ -24,6 +24,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - **Dansk / English** (`src/lib/i18n.ts`): `settings.lang` (`da`/`en`), valgt under Mere eller med globusknappen på forsiden. Teksterne står på dansk i koden; `t('dansk tekst', vars)` slår op i ordlisten `EN` (`{n}` udskiftes), `tn()` til ental/flertal, `durText()`, `locale()` til datoer og tal, `speechLang()` til oplæsning og talegenkendelse (`en-GB`). Claude får `answerLanguage()` i alle systemprompter, så svar (også oversættelse og "Skriv dagen") kommer på engelsk. Ved skift tegnes hele appen forfra (`onLang`/`langChanged`, `key` i `App.tsx`). **Ny tekst i appen skal skrives som `t('…')` og have en engelsk linje i `EN`.**
 - Browsertest for sprog og Hvor er jeg?: `node e2e/sprog.e2e.cjs`.
 - Forbrug: skøn ud fra listepriser (`track` i `ai.ts`), pr. fund og pr. måned under Mere.
+- **Log og "Del log med Claude"** (`src/lib/log.ts`, 21. nov. 2026, ejerens regel "se før du retter"): `log(m, l)` skriver en linje (`info`/`ok`/`warn`/`fejl`), de seneste 1.500 gemmes i `localStorage["kik.log"]` (gemmes også, når appen skjules). Logges: start (version, Android/Chrome, sprog, model, installeret/browser, offline), uventede fejl, net og skjult/vist; hvert Claude-kald (`track`/`explain` med etiket: Kenderen (tilstand), Fortæl mere, Spørg videre, Skriveren, Test nøgle: model, tid i ms, tokens, søgninger, stop-grund, pris, og Claudes fejltekst); billede (type, størrelse, før/efter, ms); sted (nøjagtighed, ms, fejlkode 1/2/3, gammel måling); oplæsning (stemme fundet eller ej, start, slut, fejl); tale (lytter, fejlkode, ord hørt); lygte; spor (start, opsummering pr. 30 målinger: nøjagtighed, gemt/for upræcise, punkter, km; huller over 30 s; skærm holdt tændt/sluppet; stop med varighed og km); kompas (virker eller ingen retning på 5 s); kort (åbnet, kortbrikker der ikke kunne hentes); Find retur (vist, samme vej/direkte); Del → Dagbog (delt, afbrudt, kopieret, fejl). Under Mere: kortet "Log" med "Del log med Claude" (fil `kik-log-ÅÅÅÅ-MM-DD-TTMM.json` via `navigator.share`, ellers hentes den: loggen, indstillinger uden nøgle, `hasKey`, tilladelser (sted/mikrofon/kamera), hvad telefonen kan (deling, Wake Lock, tale, kompas), oplæsningsstemmer, spor og de 40 seneste fund uden billeder), "Vis de seneste" (40 nyeste linjer) og "Ryd log". `errText` fjerner alt, der ligner en nøgle. `e2e/kik.e2e.cjs` henter filen og tjekker, at nøglen ikke er med, og at de vigtigste linjer er der.
 
 ## Byg og udgivelse
 
@@ -32,6 +33,8 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Læg ændringer på `main`. GitHub Actions udgiver til GitHub Pages (Settings → Pages → Source: GitHub Actions).
 
 ## Status (1. november 2026)
+
+- 21. nov.: Log og "Del log med Claude" bygget som forberedelse til den første rigtige tur. Næste skridt: ejeren går en tur (billeder, Fortæl mere, spørg med stemmen, oplæsning, spor og Find retur) og deler loggen; ret først det, loggen viser.
 
 - Første udgave er bygget og skubbet. Ejeren skulle slå Pages til (Source: GitHub Actions) og køre udgivelsen igen. Tjek, at https://pbo-dot.github.io/kik/ virker.
 - Endnu ikke prøvet på telefonen: ægte Claude-svar på rigtige billeder (kvalitet og pris pr. billede), kamera, sted, tale, dansk oplæsning og Del → Dagbog.

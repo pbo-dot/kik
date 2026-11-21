@@ -49,6 +49,15 @@ await p.locator('.search input').fill('rundet');await p.waitForSelector('text=2 
 await p.screenshot({path:`${SP}/7-soeg-${scheme}.png`});
 await p.goto('http://localhost:4173/#/mere');await p.waitForTimeout(300);
 await p.screenshot({path:`${SP}/5-mere-${scheme}.png`,fullPage:true});
+// Loggen: vis de seneste, og hent filen (headless kan ikke dele filer, så den hentes); nøglen må ikke være med
+await p.getByText('Vis de seneste').click();await p.waitForSelector('.logbox');
+await p.locator('.logbox').scrollIntoViewIfNeeded();
+await p.screenshot({path:`${SP}/8-log-${scheme}.png`});
+const [dl]=await Promise.all([p.waitForEvent('download'),p.getByText('Del log med Claude').click()]);
+const file=require('fs').readFileSync(await dl.path(),'utf8');const j=JSON.parse(file);
+if(scheme==='light') require('fs').writeFileSync(SP+'/log-eksempel.json',file);
+console.log(scheme,'log:',dl.suggestedFilename(),'·',j.log.length,'linjer · nøgle med:',file.includes('sk-ant-test'),'· fund:',j.finds.length,'· tilladelser:',JSON.stringify(j.permissions));
+for (const want of ['Kik starter','Kenderen (hvad): sender billede','Kenderen (hvad): svar fra','billede:','sted: ±','Fortæl mere (hvad) runde 1: svar fra','Spørg videre','Skriveren: svar fra']) if(!j.log.some(l=>l.includes(want))) console.log(scheme,'MANGLER i loggen:',want);
 console.log(scheme,'calls:',calls.map(c=>`${c.model} ${c.output_config?.format?'format':''} ${c.tools?'web':''} fb=${c.fallbacks}`).join(' | '));
 await ctx.close();}
 await b.close();})().catch(e=>{console.error(e);process.exit(1)});

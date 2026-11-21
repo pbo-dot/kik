@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { torch } from '../lib/device';
 import { bearing, directionWord, follow, getHere, getTrack, onHeading, onTrack, startTrack, stopTrack, trackKm, wayBack } from '../lib/track';
 import { Icon, go } from '../ui';
+import { log } from '../lib/log';
 
 const ROUTE_KEY = 'kik.returVej';
 const kmText = (v: number) => (v < 1 ? `${Math.round(v * 100) * 10} m` : `${v.toLocaleString(locale(), { maximumFractionDigits: 1 })} km`);
@@ -20,7 +21,7 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
   const [showBack, setShowBack] = useState(startBack);
   // Find retur: samme vej tilbage ad sporet, eller direkte mod start
   const [direct, setDirect] = useState(() => { try { return localStorage.getItem(ROUTE_KEY) === 'direkte'; } catch { return false; } });
-  const pickRoute = (d: boolean) => { setDirect(d); try { localStorage.setItem(ROUTE_KEY, d ? 'direkte' : 'samme'); } catch { /* ingen lagring */ } };
+  const pickRoute = (d: boolean) => { log(`find retur: ${d ? 'direkte' : 'samme vej'}`); setDirect(d); try { localStorage.setItem(ROUTE_KEY, d ? 'direkte' : 'samme'); } catch { /* ingen lagring */ } };
   const [heading, setHeading] = useState<number | null>(null);
   const [light, setLight] = useState(false);
   const [msg, setMsg] = useState('');
@@ -43,7 +44,11 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
     const first = getTrack()?.pts[0] ?? getHere();
     const c: [number, number] = first ? ('lat' in first ? [first.lat, first.lon] : [first[0], first[1]]) : [56.0, 11.0];
     const m = L.map(box.current, { zoomControl: false, attributionControl: true }).setView(c, first ? 16 : 6);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap', referrerPolicy: 'strict-origin-when-cross-origin' }).addTo(m);
+    const tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap', referrerPolicy: 'strict-origin-when-cross-origin' }).addTo(m);
+    // Til loggen: kortbrikker, der ikke kunne hentes (ingen dækning, blokeret)
+    let tileErrors = 0;
+    tiles.on('tileerror', () => { if (++tileErrors === 1 || tileErrors % 20 === 0) log(`kort: ${tileErrors} kortbrikker kunne ikke hentes${navigator.onLine ? '' : ' (offline)'}`, 'warn'); });
+    log(`kort: åbnet${first ? '' : ' uden kendt sted'}${getTrack() ? ` · spor med ${getTrack()!.pts.length} punkter` : ''}`);
     m.attributionControl.setPrefix(false);
     const line = L.polyline([], { className: 'trk', weight: 6, lineCap: 'round', dashArray: '1 12' }).addTo(m);
     const start = L.circleMarker(c, { className: 'start-dot', radius: 11, weight: 3 })
@@ -85,6 +90,7 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
   // Find retur: vis hele vejen tilbage (dig og start) på én gang
   function showWayBack() {
     setShowBack(true);
+    log('find retur: vist');
     const k = map.current, t = getTrack(), h = getHere();
     if (!k || !t || !h) return;
     followRef.current = false;

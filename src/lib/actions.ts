@@ -4,8 +4,12 @@ import { AIError, askAbout, identify, tellMore } from './ai';
 import { allFinds, dayOf, getFind, getPhoto, putFind, putPhoto, type Find, type Mode } from './db';
 import { shrink, where } from './device';
 import { t } from './i18n';
+import { errText, log } from './log';
 
-const message = (e: unknown) => (e instanceof AIError ? e.message : t('Noget gik galt. Prøv igen.'));
+const message = (e: unknown) => {
+  if (!(e instanceof AIError)) log(`uventet fejl · ${errText(e)}`, 'fejl');
+  return e instanceof AIError ? e.message : t('Noget gik galt. Prøv igen.');
+};
 
 async function update(id: string, change: (f: Find) => Partial<Find>) {
   const f = await getFind(id);
@@ -20,6 +24,7 @@ async function photoOf(id: string): Promise<string | null> {
 export async function newPhoto(file: Blob, mode: Mode): Promise<string> {
   const id = crypto.randomUUID();
   const createdAt = Date.now();
+  log(`nyt billede (${mode}): ${file.type || 'ukendt type'}, ${Math.round(file.size / 1024)} KB`);
   const [data, thumb, place] = await Promise.all([shrink(file, 1280), shrink(file, 240, 0.7), where()]);
   await putPhoto({ id, data, mime: 'image/jpeg' });
   await putFind({
@@ -75,7 +80,7 @@ export async function runAsk(id: string, question: string) {
 /** Blev appen lukket midt i et svar, står fundet som "i gang" for evigt. Ryd op ved start. */
 export async function fixInterrupted() {
   for (const f of await allFinds()) {
-    if (f.busy) await putFind({ ...f, busy: undefined, error: t('Blev afbrudt. Prøv igen.') });
+    if (f.busy) { log(`fund afbrudt ved lukning (${f.busy})`, 'warn'); await putFind({ ...f, busy: undefined, error: t('Blev afbrudt. Prøv igen.') }); }
   }
 }
 
@@ -83,6 +88,7 @@ export async function fixInterrupted() {
 export async function newQuestion(question: string): Promise<string> {
   const id = crypto.randomUUID();
   const createdAt = Date.now();
+  log(`spørgsmål uden billede (${question.trim().length} tegn)`);
   const place = await where();
   await putFind({ id, createdAt, day: dayOf(createdAt), mode: 'hvad', hasPhoto: false, question: question.trim(), lat: place?.lat, lon: place?.lon, chat: [], usd: 0 });
   void runAsk(id, question);
