@@ -1,4 +1,5 @@
 // Telefonens funktioner: billede, sted, tale og oplæsning.
+import { speechLang, t } from './i18n';
 
 /** Gør billedet mindre (lang side højst `max` px) og giver base64 JPEG uden "data:"-start. */
 export async function shrink(file: Blob, max: number, quality = 0.82): Promise<string> {
@@ -45,8 +46,8 @@ export function speak(text: string, onEnd: () => void): () => void {
   const synth = window.speechSynthesis;
   synth.cancel();
   const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'da-DK';
-  const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith('da'));
+  u.lang = speechLang();
+  const voice = synth.getVoices().find((v) => v.lang.toLowerCase().replace('_', '-').startsWith(u.lang.slice(0, 2).toLowerCase()));
   if (voice) u.voice = voice;
   u.rate = 1;
   u.onend = onEnd;
@@ -83,11 +84,11 @@ export const canListen = () => !!SpeechCtor();
 export function listen(onText: (text: string) => void, onEnd: (err?: string) => void): () => void {
   const Ctor = SpeechCtor();
   if (!Ctor) {
-    onEnd('Tale virker ikke i denne browser.');
+    onEnd(t('Tale virker ikke i denne browser.'));
     return () => {};
   }
   const rec = new Ctor();
-  rec.lang = 'da-DK';
+  rec.lang = speechLang();
   rec.continuous = false;
   rec.interimResults = true;
   rec.onresult = (e) => {
@@ -95,7 +96,7 @@ export function listen(onText: (text: string) => void, onEnd: (err?: string) => 
     for (let i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
     onText(t.trim());
   };
-  rec.onerror = (e) => onEnd(e.error === 'not-allowed' ? 'Mikrofonen er ikke tilladt.' : undefined);
+  rec.onerror = (e) => onEnd(e.error === 'not-allowed' ? t('Mikrofonen er ikke tilladt.') : undefined);
   rec.onend = () => onEnd();
   rec.start();
   return () => rec.stop();

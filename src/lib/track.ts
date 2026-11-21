@@ -2,6 +2,7 @@
 // Browseren må ikke måle med slukket skærm, så skærmen holdes tændt (Wake Lock), mens sporet kører.
 // Huller (fx hvis skærmen alligevel slukkes) bliver bare til lige streger, og vejen til start virker altid.
 import { km, type Place } from './device';
+import { t } from './i18n';
 
 export type Pt = [lat: number, lon: number, t: number];
 export interface Track { startedAt: number; pts: Pt[] } // pts[0] er start
@@ -76,7 +77,7 @@ export function resumeTrack() {
 
 /** Start et spor her (fx ved bilen). */
 export function startTrack(): Promise<void> {
-  if (!('geolocation' in navigator)) return Promise.reject(new Error('Telefonen kan ikke finde sted her.'));
+  if (!('geolocation' in navigator)) return Promise.reject(new Error(t('Telefonen kan ikke finde sted her.')));
   return new Promise((res, rej) => {
     navigator.geolocation.getCurrentPosition(
       (p) => {
@@ -87,7 +88,7 @@ export function startTrack(): Promise<void> {
         void keepAwake();
         res();
       },
-      (e) => rej(new Error(e.code === e.PERMISSION_DENIED ? 'Kik må ikke se, hvor du er. Tillad sted i Chrome.' : 'Kunne ikke finde dig. Prøv igen udenfor.')),
+      (e) => rej(new Error(e.code === e.PERMISSION_DENIED ? t('Kik må ikke se, hvor du er. Tillad sted i Chrome.') : t('Kunne ikke finde dig. Prøv igen udenfor.'))),
       { enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 },
     );
   });

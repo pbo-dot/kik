@@ -11,7 +11,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - React + TypeScript + Vite, `vite-plugin-pwa` (samme stil som pbo-dot/dagbog). Ingen server. Alt gemmes på telefonen i IndexedDB (`src/lib/db.ts`: `finds` og `photos` for sig, så lister er hurtige).
 - Claude kaldes direkte fra telefonen med ejerens egen nøgle (`localStorage["kik.claudeKey"]`). Model i `settings.model` (standard `claude-sonnet-5-5`, valgfrit `claude-opus-5-5`). Alle kald har `fallbacks: "default"` (beta `server-side-fallback-2026-07-01`).
 - Agenterne (`src/lib/ai.ts`):
-  - **Kenderen** `identify()`: billede + koordinater → struktureret svar (`kategori, navn, svar, sikker, bedOm, sted, hvor`) med zod, effort low. Fire tilstande (`MODES`): Hvad er det?, Oversæt, Pris og anmeldelser, Hvordan gør jeg?
+  - **Kenderen** `identify()`: billede + koordinater → struktureret svar (`kategori, navn, svar, sikker, bedOm, sted, hvor`) med zod, effort low. Fem tilstande (`MODES`): Hvad er det?, Hvor er jeg? (kamera + GPS: hvor du står og hvad du ser; knappen hedder "Åbn kamera", og svaret har knappen Kort), Oversæt, Pris og anmeldelser, Hvordan gør jeg?
   - **Opslageren** `tellMore()` og `askAbout()`: websøgning (`web_search_20260209`, højst 4) for "Fortæl mere" og spørgsmål. Pris og Hvordan slår op med det samme.
   - **Skriveren** `writeDay()`: et kort dagbogsafsnit i jeg-form ud fra dagens fund.
 - `src/lib/actions.ts` kører arbejdet i baggrunden og gemmer undervejs (`busy`), så man kan skifte skærm. Skærmene lytter med `onChange`/`useData`.
@@ -19,8 +19,10 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 - Tale: `SpeechRecognition` (da-DK) til at spørge, `speechSynthesis` til oplæsning ("Læs svaret op med det samme" under Mere).
 - "Del → Dagbog" bruger `navigator.share` med tekst; Dagbog modtager delt tekst som en ny samtale. Dagbog skal ikke ændres.
 - **Har jeg set den før?** (`src/lib/seen.ts`): under svaret vises "Set før · N gange" (match på kernen af navnet, `baseName`), og "Se alle" åbner søgningen (`#/soeg/<ord>`). Søgefelt øverst på Dage søger i navn, kategori, sted, svar og samtale. Kun på telefonen, gratis. `hvor` (stednavn) mangler i de første fund.
-- **Kort og Find retur** (`src/lib/track.ts`, `src/screens/Kort.tsx`, rute `#/kort`, `#/retur` åbner med pilen): knappen "Kort" på forsiden (eller på sporkortet, mens et spor kører). Kortet følger dig (`follow()` måler sted, mens kortet er åbent, også uden spor); flytter man kortet selv, stopper det, og en rund knap følger igen. Uden spor: "Start spor". Med spor: "gået" og "siden start", "Find retur" (zoomer ud til dig og start, pil, afstand og tid tilbage ad sporet, 4 km/t) og "Skjul pil"; Stop som rund knap i toppen. Sporet gemmes i `localStorage["kik.track"]` (`watchPosition`, mindst 8 m mellem punkter, upræcise over 40 m springes over), skærmen holdes tændt (Wake Lock), og det fortsætter, når Kik åbnes igen. Leaflet + OpenStreetMap (hentes først, når kortet åbnes; mørkt kort via CSS-filter; brikker gemmes 30 dage, cache `kort`). Lommelygte (`torch` i `device.ts`). Browseren kan ikke måle med slukket skærm: huller bliver lige streger. CSP i `index.html` tillader `tile.openstreetmap.org`; kortet sender kun appens adresse som henviser (krav fra OpenStreetMap).
+- **Kort og Find retur** (`src/lib/track.ts`, `src/screens/Kort.tsx`, rute `#/kort`, `#/retur` åbner med pilen): knappen "Kort" på forsiden (eller på sporkortet, mens et spor kører). Kortet følger dig (`follow()` måler sted, mens kortet er åbent, også uden spor); flytter man kortet selv, stopper det, og en rund knap følger igen. Uden spor: "Start spor". Med spor: "gået" og "siden start", "Find retur" (zoomer ud til dig og start, pil, afstand og tid tilbage ad sporet, 4 km/t) og "Skjul pil"; under Find retur vælges "Samme vej" (ad sporet) eller "Direkte" (lige streg til start, sporet tones ned, advarsel om hegn/vand/privat grund; valget huskes i `localStorage["kik.returVej"]`); Stop som rund knap i toppen. Sporet gemmes i `localStorage["kik.track"]` (`watchPosition`, mindst 8 m mellem punkter, upræcise over 40 m springes over), skærmen holdes tændt (Wake Lock), og det fortsætter, når Kik åbnes igen. Leaflet + OpenStreetMap (hentes først, når kortet åbnes; mørkt kort via CSS-filter; brikker gemmes 30 dage, cache `kort`). Lommelygte (`torch` i `device.ts`). Browseren kan ikke måle med slukket skærm: huller bliver lige streger. CSP i `index.html` tillader `tile.openstreetmap.org`; kortet sender kun appens adresse som henviser (krav fra OpenStreetMap).
 - Browsertest for Kort og Find retur: `node e2e/retur.e2e.cjs` (falsk GPS-tur ved Tisvilde, falske kortbrikker; tjekker at kortet følger, "følg mig"-knappen og at start ses ved Find retur).
+- **Dansk / English** (`src/lib/i18n.ts`): `settings.lang` (`da`/`en`), valgt under Mere eller med globusknappen på forsiden. Teksterne står på dansk i koden; `t('dansk tekst', vars)` slår op i ordlisten `EN` (`{n}` udskiftes), `tn()` til ental/flertal, `durText()`, `locale()` til datoer og tal, `speechLang()` til oplæsning og talegenkendelse (`en-GB`). Claude får `answerLanguage()` i alle systemprompter, så svar (også oversættelse og "Skriv dagen") kommer på engelsk. Ved skift tegnes hele appen forfra (`onLang`/`langChanged`, `key` i `App.tsx`). **Ny tekst i appen skal skrives som `t('…')` og have en engelsk linje i `EN`.**
+- Browsertest for sprog og Hvor er jeg?: `node e2e/sprog.e2e.cjs`.
 - Forbrug: skøn ud fra listepriser (`track` i `ai.ts`), pr. fund og pr. måned under Mere.
 
 ## Byg og udgivelse
@@ -39,6 +41,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
   - **Har jeg set den før?**: bygget.
   - **Find retur**: bygget. Ikke prøvet på telefonen endnu (GPS, kompas, lommelygte, skærm tændt).
 - Udkast: `docs/forslag-kort.png` og `-mork.png`: kort, der følger dig. Bygget.
+- Udkast: `docs/forslag-hvor-retur-sprog.png` og `-mork.png`: Hvor er jeg?, Direkte vej retur, Dansk/English. Bygget (21. nov. 2026). Ikke prøvet på telefonen (engelsk oplæsning og tale, kamera).
 
 ## Om ejeren
 
@@ -49,7 +52,7 @@ Kik er en guide i lommen (PWA) til eget brug: https://pbo-dot.github.io/kik/. Pe
 ## Færdig-tjekliste (før ejeren får besked)
 
 - [ ] `npm run build` og `npm run lint` uden fejl.
-- [ ] `node e2e/kik.e2e.cjs` og `node e2e/retur.e2e.cjs` kørt, og skærmbillederne set (lys og mørk).
+- [ ] `node e2e/kik.e2e.cjs`, `node e2e/retur.e2e.cjs` og `node e2e/sprog.e2e.cjs` kørt, og skærmbillederne set (lys og mørk).
 - [ ] CLAUDE.md opdateret, hvis noget nyt er bygget.
 - [ ] Skubbet til `main`, og "Udgiv på GitHub Pages" er grøn.
 - [ ] Ejeren har fået linket og en ærlig besked om, hvad der kun kan testes på telefonen.

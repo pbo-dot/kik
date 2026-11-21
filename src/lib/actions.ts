@@ -3,8 +3,9 @@
 import { AIError, askAbout, identify, tellMore } from './ai';
 import { allFinds, dayOf, getFind, getPhoto, putFind, putPhoto, type Find, type Mode } from './db';
 import { shrink, where } from './device';
+import { t } from './i18n';
 
-const message = (e: unknown) => (e instanceof AIError ? e.message : 'Noget gik galt. Prøv igen.');
+const message = (e: unknown) => (e instanceof AIError ? e.message : t('Noget gik galt. Prøv igen.'));
 
 async function update(id: string, change: (f: Find) => Partial<Find>) {
   const f = await getFind(id);
@@ -74,7 +75,7 @@ export async function runAsk(id: string, question: string) {
 /** Blev appen lukket midt i et svar, står fundet som "i gang" for evigt. Ryd op ved start. */
 export async function fixInterrupted() {
   for (const f of await allFinds()) {
-    if (f.busy) await putFind({ ...f, busy: undefined, error: 'Blev afbrudt. Prøv igen.' });
+    if (f.busy) await putFind({ ...f, busy: undefined, error: t('Blev afbrudt. Prøv igen.') });
   }
 }
 

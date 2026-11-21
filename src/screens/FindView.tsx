@@ -1,4 +1,5 @@
 // Svaret på ét billede eller spørgsmål.
+import { t } from '../lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { MODES } from '../lib/ai';
 import { runAsk, runIdentify, runMore } from '../lib/actions';
@@ -48,7 +49,7 @@ export function FindView({ id }: { id: string }) {
   }, [f]);
 
   if (f === undefined) return <main className="page" />;
-  if (f === null) return <main className="page"><p>Fundet findes ikke længere.</p><a href="#/">Til Kik</a></main>;
+  if (f === null) return <main className="page"><p>{t('Fundet findes ikke længere.')}</p><a href="#/">{t('Til Kik')}</a></main>;
 
   const toggleSpeak = () => {
     if (talking) { stop.current(); setTalking(false); return; }
@@ -77,7 +78,7 @@ export function FindView({ id }: { id: string }) {
   }
 
   async function remove() {
-    if (!confirm('Slet dette fund?')) return;
+    if (!confirm(t('Slet dette fund?'))) return;
     await deleteFind(id);
     go('/');
   }
@@ -91,24 +92,24 @@ export function FindView({ id }: { id: string }) {
   return (
     <main className="page">
       <header className="top">
-        <button className="round" onClick={() => history.length > 1 ? history.back() : go('/')} aria-label="Tilbage"><Icon name="back" /></button>
-        <span className="muted small">{time(f.createdAt)}{f.usd > 0 ? ` · ca. ${krText(f.usd)}` : ''}</span>
-        <button className="round" onClick={remove} aria-label="Slet"><Icon name="trash" /></button>
+        <button className="round" onClick={() => history.length > 1 ? history.back() : go('/')} aria-label={t('Tilbage')}><Icon name="back" /></button>
+        <span className="muted small">{time(f.createdAt)}{f.usd > 0 ? ` · ${t('ca. {kr}', { kr: krText(f.usd) })}` : ''}</span>
+        <button className="round" onClick={remove} aria-label={t('Slet')}><Icon name="trash" /></button>
       </header>
 
       {f.hasPhoto && (photo ? <img className="photo" src={`data:${photo.mime};base64,${photo.data}`} alt="" /> : <div className="photo" />)}
 
       {f.busy === 'kigger' && (
-        <div className="card answer loading"><span className="dot-pulse" /> Kigger …</div>
+        <div className="card answer loading"><span className="dot-pulse" /> {t('Kigger …')}</div>
       )}
 
       {a && (
         <article className="card answer">
-          <div className="kicker">{a.kategori}{f.mode !== 'hvad' ? ` · ${MODES[f.mode].label}` : ''}</div>
+          <div className="kicker">{a.kategori}{f.mode !== 'hvad' ? ` · ${t(MODES[f.mode].label)}` : ''}</div>
           <h2>{a.navn}</h2>
           <p className="pre">{plain(a.svar)}</p>
           {!a.sikker && a.bedOm && (
-            <p className="hint">Ikke helt sikker. {a.bedOm}</p>
+            <p className="hint">{t('Ikke helt sikker.')} {a.bedOm}</p>
           )}
         </article>
       )}
@@ -119,7 +120,7 @@ export function FindView({ id }: { id: string }) {
 
       {f.more && (
         <article className="card answer">
-          <div className="kicker">Mere</div>
+          <div className="kicker">{t('Mere')}</div>
           <p className="pre">{plain(f.more.text)}</p>
           {!!f.more.links.length && (
             <div className="links">
@@ -128,40 +129,42 @@ export function FindView({ id }: { id: string }) {
           )}
         </article>
       )}
-      {f.busy === 'mere' && <div className="card answer loading"><span className="dot-pulse" /> Slår op …</div>}
+      {f.busy === 'mere' && <div className="card answer loading"><span className="dot-pulse" /> {t('Slår op …')}</div>}
 
       {turns.slice(f.question ? 1 : 0).map((t, i) => (
         <div key={i} className={`bubble ${t.role === 'user' ? 'me' : 'it'}`}>{plain(t.text)}</div>
       ))}
-      {f.busy === 'svarer' && <div className="bubble it loading"><span className="dot-pulse" /> Tænker …</div>}
+      {f.busy === 'svarer' && <div className="bubble it loading"><span className="dot-pulse" /> {t('Tænker …')}</div>}
 
       {f.error && (
         <div className="card error-card">
           <span className="grow">{f.error}</span>
-          {!a && f.hasPhoto && <button className="btn tonal small" onClick={() => void runIdentify(id)}><Icon name="refresh" /> Prøv igen</button>}
-          {f.question && !f.chat.length && <button className="btn tonal small" onClick={() => void runAsk(id, f.question!)}><Icon name="refresh" /> Prøv igen</button>}
+          {!a && f.hasPhoto && <button className="btn tonal small" onClick={() => void runIdentify(id)}><Icon name="refresh" /> {t('Prøv igen')}</button>}
+          {f.question && !f.chat.length && <button className="btn tonal small" onClick={() => void runAsk(id, f.question!)}><Icon name="refresh" /> {t('Prøv igen')}</button>}
         </div>
       )}
 
       {!f.busy && (a || f.chat.length > 0) && (
         <div className="actions">
           {canSpeak() && (
-            <button className="btn filled" onClick={toggleSpeak}><Icon name={talking ? 'stop' : 'speaker'} /> {talking ? 'Stop' : 'Læs op'}</button>
+            <button className="btn filled" onClick={toggleSpeak}><Icon name={talking ? 'stop' : 'speaker'} /> {talking ? t('Stop') : t('Læs op')}</button>
           )}
-          {a && !f.more && <button className="btn tonal" onClick={() => void runMore(id)}><Icon name="spark" /> Fortæl mere</button>}
-          {mapUrl && <a className="btn tonal" href={mapUrl} target="_blank" rel="noreferrer"><Icon name="route" /> Vis vej</a>}
+          {a && !f.more && <button className="btn tonal" onClick={() => void runMore(id)}><Icon name="spark" /> {t('Fortæl mere')}</button>}
+          {f.mode === 'hvor'
+            ? <a className="btn tonal" href="#/kort"><Icon name="map" /> {t('Kort')}</a>
+            : mapUrl && <a className="btn tonal" href={mapUrl} target="_blank" rel="noreferrer"><Icon name="route" /> {t('Vis vej')}</a>}
         </div>
       )}
 
       {!f.busy && (a || f.chat.length > 0) && (
         <form className="askbar" onSubmit={(e) => { e.preventDefault(); ask(q); }}>
           {canListen() && (
-            <button type="button" className={`round ${listening ? 'live' : ''}`} onClick={talk} disabled={listening} aria-label="Spørg med stemmen">
+            <button type="button" className={`round ${listening ? 'live' : ''}`} onClick={talk} disabled={listening} aria-label={t('Spørg med stemmen')}>
               <Icon name="mic" />
             </button>
           )}
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={listening ? 'Jeg lytter …' : 'Spørg videre …'} enterKeyHint="send" />
-          {q.trim() && <button className="round filled" aria-label="Send"><Icon name="send" /></button>}
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={listening ? t('Jeg lytter …') : t('Spørg videre …')} enterKeyHint="send" />
+          {q.trim() && <button className="round filled" aria-label={t('Send')}><Icon name="send" /></button>}
         </form>
       )}
     </main>
@@ -174,10 +177,10 @@ function SeenBefore({ f, all }: { f: Find; all: Find[] }) {
   if (!seen.length) return null;
   return (
     <section className="card answer seen">
-      <div className="kicker">Set før · {seen.length} {seen.length === 1 ? 'gang' : 'gange'}</div>
+      <div className="kicker">{seen.length === 1 ? t('Set før · 1 gang') : t('Set før · {n} gange', { n: seen.length })}</div>
       {seen.slice(0, 2).map((g) => <FindRow key={g.id} f={g} />)}
       {seen.length > 2 && (
-        <div className="center"><a className="btn text small" href={`#/soeg/${encodeURIComponent(baseName(f.answer!.navn))}`}>Se alle {seen.length} ›</a></div>
+        <div className="center"><a className="btn text small" href={`#/soeg/${encodeURIComponent(baseName(f.answer!.navn))}`}>{t('Se alle {n} ›', { n: seen.length })}</a></div>
       )}
     </section>
   );

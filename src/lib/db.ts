@@ -1,7 +1,7 @@
 // Lager på telefonen (IndexedDB): ét "fund" pr. billede eller spørgsmål.
 // Billederne ligger for sig, så listerne kan hentes hurtigt uden dem.
 
-export type Mode = 'hvad' | 'oversaet' | 'pris' | 'hvordan';
+export type Mode = 'hvad' | 'hvor' | 'oversaet' | 'pris' | 'hvordan';
 
 export interface ChatTurn { role: 'user' | 'assistant'; text: string }
 export interface Link { url: string; title: string }

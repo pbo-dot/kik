@@ -111,6 +111,10 @@ h3 { font-size: 17px; margin: 0 0 10px; }
 .stats .card { flex: 1; margin: 0; padding: 14px 18px; }
 .stats b { display: block; font-size: 28px; font-weight: 800; line-height: 1.15; }
 .stats span { color: var(--mut); font-size: 14px; }
+.map .direct-line { stroke: var(--pri); }
+.map .trk.faded { opacity: .35; }
+.kort .seg { margin: 0 0 10px; }
+.way .warn { display: block; font-size: 14px; color: var(--mut); margin-top: 4px; }
 .way { display: flex; align-items: center; gap: 16px; }
 .way .big { display: block; font-size: 32px; font-weight: 800; line-height: 1.1; }
 .way .muted { display: block; }

@@ -1,4 +1,5 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
+import { lang, onLang } from './lib/i18n';
 import { UpdateBanner } from './UpdateBanner';
 import { Day, Days } from './screens/Days';
 import { FindView } from './screens/FindView';
@@ -11,6 +12,9 @@ const Kort = lazy(() => import('./screens/Kort'));
 
 export default function App() {
   const [page, arg] = useRoute();
+  // Skift sprog: hele appen tegnes forfra på det nye sprog
+  const [lng, setLng] = useState(lang);
+  useEffect(() => onLang(() => setLng(lang())), []);
   let view;
   let tab = '';
   if (page === 'fund' && arg) view = <FindView key={arg} id={arg} />;
@@ -21,10 +25,10 @@ export default function App() {
   else if (page === 'mere') { view = <More />; tab = 'mere'; }
   else view = <Home />;
   return (
-    <>
+    <div key={lng}>
       <UpdateBanner />
       {view}
       <TabBar active={tab} />
-    </>
+    </div>
   );
 }

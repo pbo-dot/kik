@@ -1,4 +1,5 @@
 // Dage: alt, du har kigget på, samlet pr. dag, med rute og "Del → Dagbog".
+import { locale, t, tn } from '../lib/i18n';
 import { useState } from 'react';
 import { writeDay, AIError } from '../lib/ai';
 import { allFinds, dayFinds, type Find } from '../lib/db';
@@ -16,18 +17,18 @@ export function Days({ q: start = '' }: { q?: string }) {
   const list = [...days].sort((a, b) => (a[0] < b[0] ? 1 : -1));
   return (
     <main className="page">
-      <header className="top"><h1>Dage</h1></header>
+      <header className="top"><h1>{t('Dage')}</h1></header>
       {!!finds?.length && (
         <form className="search" role="search" onSubmit={(e) => { e.preventDefault(); (document.activeElement as HTMLElement | null)?.blur(); }}>
           <Icon name="search" />
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Søg i dine fund" aria-label="Søg i dine fund" enterKeyHint="search" />
-          {q && <button type="button" className="round clear" onClick={() => setQ('')} aria-label="Ryd"><Icon name="close" /></button>}
+          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder={t('Søg i dine fund')} aria-label={t('Søg i dine fund')} enterKeyHint="search" />
+          {q && <button type="button" className="round clear" onClick={() => setQ('')} aria-label={t('Ryd')}><Icon name="close" /></button>}
         </form>
       )}
-      {finds && !list.length && <p className="sub">Når du har kigget på noget, samles det her.</p>}
+      {finds && !list.length && <p className="sub">{t('Når du har kigget på noget, samles det her.')}</p>}
       {hits && (
         <>
-          <div className="sec">{hits.length ? `${hits.length} fund` : 'Ingen fund'}</div>
+          <div className="sec">{hits.length ? tn(hits.length, '1 fund', '{n} fund') : t('Ingen fund')}</div>
           {hits.map((f) => <FindRow key={f.id} f={f} />)}
         </>
       )}
@@ -38,7 +39,7 @@ export function Days({ q: start = '' }: { q?: string }) {
           </span>
           <span className="grow">
             <b>{dayLabel(day)}</b>
-            <span>{fs.length} ting · {fs.map((f) => f.answer?.navn).filter(Boolean).slice(0, 3).join(', ')}</span>
+            <span>{tn(fs.length, '1 ting', '{n} ting')} · {fs.map((f) => f.answer?.navn).filter(Boolean).slice(0, 3).join(', ')}</span>
           </span>
         </a>
       ))}
@@ -62,7 +63,7 @@ function Route({ finds }: { finds: Find[] }) {
   const ox = (W - w * s) / 2, oy = (H - h * s) / 2;
   const P = pts.map((p, i) => [ox + (xs[i] - Math.min(...xs)) * s, H - (oy + (p.lat - Math.min(...lats)) * s)]);
   return (
-    <svg className="route card" viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Dagens rute">
+    <svg className="route card" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={t('Dagens rute')}>
       <polyline points={P.map((p) => p.join(',')).join(' ')} fill="none" stroke="var(--pri)" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="1 10" />
       {P.map((p, i) => <circle key={i} cx={p[0]} cy={p[1]} r={i === 0 || i === P.length - 1 ? 8 : 6} fill="var(--pri)" />)}
     </svg>
@@ -71,14 +72,14 @@ function Route({ finds }: { finds: Find[] }) {
 
 function plainList(finds: Find[], label: string): string {
   const lines = finds.map((f) => `• ${time(f.createdAt)} ${f.answer ? `${f.answer.navn} (${f.answer.kategori.toLowerCase()})` : f.question ?? ''}`);
-  return `${label} – det så jeg med Kik:\n${lines.join('\n')}`;
+  return `${t('{label} – det så jeg med Kik:', { label })}\n${lines.join('\n')}`;
 }
 
 async function share(text: string): Promise<string> {
   if (navigator.share) {
     try { await navigator.share({ text }); return ''; } catch (e) { if ((e as Error).name === 'AbortError') return ''; }
   }
-  try { await navigator.clipboard.writeText(text); return 'Kopieret. Sæt den ind i Dagbog.'; } catch { return 'Kunne ikke dele.'; }
+  try { await navigator.clipboard.writeText(text); return t('Kopieret. Sæt den ind i Dagbog.'); } catch { return t('Kunne ikke dele.'); }
 }
 
 export function Day({ day }: { day: string }) {
@@ -98,9 +99,9 @@ export function Day({ day }: { day: string }) {
     try {
       const { text, usd } = await writeDay(finds!, label);
       setStory(text);
-      setMsg(`ca. ${krText(usd)}`);
+      setMsg(t('ca. {kr}', { kr: krText(usd) }));
     } catch (e) {
-      setMsg(e instanceof AIError ? e.message : 'Noget gik galt.');
+      setMsg(e instanceof AIError ? e.message : t('Noget gik galt.'));
     } finally {
       setBusy(false);
     }
@@ -109,25 +110,25 @@ export function Day({ day }: { day: string }) {
   return (
     <main className="page">
       <header className="top">
-        <button className="round" onClick={() => history.back()} aria-label="Tilbage"><Icon name="back" /></button>
+        <button className="round" onClick={() => history.back()} aria-label={t('Tilbage')}><Icon name="back" /></button>
         <h1 className="h-small grow">{label}</h1>
       </header>
       <Route finds={finds} />
-      <div className="sec">{finds.length} ting{dist >= 0.1 ? ` · ${dist.toLocaleString('da-DK', { maximumFractionDigits: 1 })} km` : ''}</div>
+      <div className="sec">{tn(finds.length, '1 ting', '{n} ting')}{dist >= 0.1 ? ` · ${dist.toLocaleString(locale(), { maximumFractionDigits: 1 })} km` : ''}</div>
       {finds.map((f) => (
         <a key={f.id} className="row" href={`#/fund/${f.id}`}>
           {f.thumb ? <img className="thumb" src={f.thumb} alt="" /> : <span className="thumb q"><Icon name="mic" /></span>}
           <span className="grow">
-            <b>{f.answer?.navn ?? f.question ?? 'Uden svar'}</b>
-            <span>{f.answer?.kategori ?? 'Spørgsmål'} · {time(f.createdAt)}</span>
+            <b>{f.answer?.navn ?? f.question ?? t('Uden svar')}</b>
+            <span>{f.answer?.kategori ?? t('Spørgsmål')} · {time(f.createdAt)}</span>
           </span>
         </a>
       ))}
-      {story && <article className="card answer"><div className="kicker">Dagen</div><p className="pre">{story}</p></article>}
+      {story && <article className="card answer"><div className="kicker">{t('Dagen')}</div><p className="pre">{story}</p></article>}
       {!!finds.length && (
         <div className="actions">
-          <button className="btn filled" onClick={async () => setMsg(await share(story || plainList(finds, label)))}><Icon name="share" /> Del → Dagbog</button>
-          {!story && <button className="btn tonal" onClick={write} disabled={busy}><Icon name="spark" /> {busy ? 'Skriver …' : 'Skriv dagen'}</button>}
+          <button className="btn filled" onClick={async () => setMsg(await share(story || plainList(finds, label)))}><Icon name="share" /> {t('Del → Dagbog')}</button>
+          {!story && <button className="btn tonal" onClick={write} disabled={busy}><Icon name="spark" /> {busy ? t('Skriver …') : t('Skriv dagen')}</button>}
         </div>
       )}
       {msg && <p className="muted small center">{msg}</p>}

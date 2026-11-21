@@ -1,9 +1,11 @@
 // Indstillinger i localStorage. Claude-nøglen ligger kun her, på telefonen.
+import { locale, t } from './i18n';
 
 export interface Settings {
   model: string;
   autoSpeak: boolean;
   theme: 'auto' | 'light' | 'dark';
+  lang: 'da' | 'en';
 }
 
 export const MODELS = [
@@ -11,7 +13,7 @@ export const MODELS = [
   { id: 'claude-opus-5-5', label: 'Opus 5.5 (grundigere, dobbelt pris)' },
 ];
 
-const DEFAULTS: Settings = { model: 'claude-sonnet-5-5', autoSpeak: false, theme: 'auto' };
+const DEFAULTS: Settings = { model: 'claude-sonnet-5-5', autoSpeak: false, theme: 'auto', lang: 'da' };
 const KEY = 'kik.settings';
 const API_KEY = 'kik.claudeKey';
 
@@ -26,6 +28,7 @@ export function getSettings(): Settings {
 export function saveSettings(s: Settings) {
   safe(() => localStorage.setItem(KEY, JSON.stringify(s)), undefined);
   applyTheme(s.theme);
+  document.documentElement.lang = s.lang;
 }
 
 export const getApiKey = () => safe(() => localStorage.getItem(API_KEY) ?? '', '');
@@ -55,6 +58,6 @@ export function monthUsage(): number {
 /** "0,12 kr" */
 export function krText(usd: number): string {
   const v = usd * DKK_PER_USD;
-  if (v > 0 && v < 0.005) return 'under 1 øre';
-  return `${v.toLocaleString('da-DK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr`;
+  if (v > 0 && v < 0.005) return t('under 1 øre');
+  return `${v.toLocaleString(locale(), { minimumFractionDigits: 2, maximumFractionDigits: 2 })} kr`;
 }

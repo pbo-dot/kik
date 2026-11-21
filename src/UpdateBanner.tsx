@@ -1,3 +1,4 @@
+import { t } from './lib/i18n';
 import { useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
@@ -18,8 +19,8 @@ export function UpdateBanner() {
   if (!needRefresh) return null;
   return (
     <div className="update-banner" role="status">
-      <span className="grow">Ny version klar</span>
-      <button className="btn primary small" onClick={() => updateServiceWorker(true)}>Opdatér</button>
+      <span className="grow">{t('Ny version klar')}</span>
+      <button className="btn primary small" onClick={() => updateServiceWorker(true)}>{t('Opdatér')}</button>
     </div>
   );
 }

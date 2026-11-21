@@ -5,12 +5,13 @@ import { betaZodOutputFormat } from '@anthropic-ai/sdk/helpers/beta/zod';
 import { z } from 'zod';
 import type { Answer, ChatTurn, Find, Link, Mode } from './db';
 import { addUsage, getApiKey, getSettings } from './settings';
+import { answerLanguage, t } from './i18n';
 
 export class AIError extends Error {}
 
 function client() {
   const apiKey = getApiKey();
-  if (!apiKey) throw new AIError('Tilføj din Claude-nøgle under Mere.');
+  if (!apiKey) throw new AIError(t('Tilføj din Claude-nøgle under Mere.'));
   return new Anthropic({ apiKey, dangerouslyAllowBrowser: true });
 }
 
@@ -19,12 +20,12 @@ const FALLBACK = { betas: ['server-side-fallback-2026-07-01'], fallbacks: 'defau
 
 function explain(e: unknown): never {
   if (e instanceof AIError) throw e;
-  if (e instanceof Anthropic.AuthenticationError) throw new AIError('Nøglen blev afvist. Tjek den under Mere.');
-  if (e instanceof Anthropic.PermissionDeniedError) throw new AIError('Nøglen har ikke adgang til modellen.');
-  if (e instanceof Anthropic.RateLimitError) throw new AIError('For mange spørgsmål lige nu. Prøv igen om lidt.');
-  if (e instanceof Anthropic.APIConnectionError) throw new AIError('Ingen forbindelse. Er du online?');
-  if (e instanceof Anthropic.APIError) throw new AIError(`Claude svarede med en fejl (${e.status}).`);
-  throw new AIError('Noget gik galt.');
+  if (e instanceof Anthropic.AuthenticationError) throw new AIError(t('Nøglen blev afvist. Tjek den under Mere.'));
+  if (e instanceof Anthropic.PermissionDeniedError) throw new AIError(t('Nøglen har ikke adgang til modellen.'));
+  if (e instanceof Anthropic.RateLimitError) throw new AIError(t('For mange spørgsmål lige nu. Prøv igen om lidt.'));
+  if (e instanceof Anthropic.APIConnectionError) throw new AIError(t('Ingen forbindelse. Er du online?'));
+  if (e instanceof Anthropic.APIError) throw new AIError(t('Claude svarede med en fejl ({s}).', { s: String(e.status) }));
+  throw new AIError(t('Noget gik galt.'));
 }
 
 // ---- Pris (skøn ud fra listepriser, dollar pr. million tokens) ----
@@ -55,6 +56,7 @@ function track(res: { model: string; usage: ApiUsage }): number {
 
 export const MODES: Record<Mode, { label: string; task: string }> = {
   hvad: { label: 'Hvad er det?', task: 'Sig, hvad det er, og fortæl én god, kort historie eller et sjovt faktum om det.' },
+  hvor: { label: 'Hvor er jeg?', task: 'Sig, hvor personen står (sted, gade, bydel eller by) ud fra koordinaterne og billedet, og hvad de ser: de vigtigste ting på billedet og omkring dem, og hvilken vej der går hvorhen, hvis du kan se det. navn er stedets navn, kategori er "Sted".' },
   oversaet: { label: 'Oversæt', task: 'Oversæt teksten på billedet til dansk. Er det et menukort, så nævn kort de retter, der er mest værd at prøve.' },
   pris: { label: 'Pris og anmeldelser', task: 'Sig præcist, hvilket produkt det er (mærke, model, årgang). Pris og anmeldelser slås op bagefter, så gæt ikke på priser.' },
   hvordan: { label: 'Hvordan gør jeg?', task: 'Sig, hvad det er, og forklar trin for trin, hvordan man bruger, skifter eller ordner det, der er mest sandsynligt, at man vil.' },
@@ -98,13 +100,13 @@ export async function identify(photo: string, f: Find): Promise<{ answer: Answer
     const res = await client().beta.messages.parse({
       model: s.model,
       max_tokens: 4000,
-      system: `${GUIDE}\n\nNu er det ${now()}. ${placeText(f)}`,
+      system: `${GUIDE}\n\nNu er det ${now()}. ${placeText(f)}${answerLanguage()}`,
       output_config: { effort: 'low', format: betaZodOutputFormat(IdentifySchema) },
       messages: [{ role: 'user', content: [imageBlock(photo), { type: 'text', text: MODES[f.mode].task }] }],
       ...FALLBACK,
     });
     const usd = track(res);
-    if (res.stop_reason === 'refusal' || !res.parsed_output) throw new AIError('Claude kunne ikke svare på dette billede.');
+    if (res.stop_reason === 'refusal' || !res.parsed_output) throw new AIError(t('Claude kunne ikke svare på dette billede.'));
     return { answer: res.parsed_output, usd };
   } catch (e) {
     explain(e);
@@ -128,6 +130,8 @@ function moreTask(f: Find): string {
       return `Find prisen på ${what} i danske butikker (laveste pris og hvor), og hvad anmeldere og købere siger. Højst 6 linjer.`;
     case 'hvordan':
       return `Find en vejledning til ${what}, fx fra producenten. Forklar trinene kort, og nævn reservedelsnumre, hvis det er relevant.`;
+    case 'hvor':
+      return `Fortæl mere om stedet (${what}): historien, hvad der er værd at se inden for ca. 500 meter, og ét godt tip. Højst 8 korte sætninger, skrevet til oplæsning.`;
     case 'oversaet':
       return `Fortæl lidt mere om det, der står på billedet (${what}), fx hvad retterne er, eller hvad skiltet betyder i praksis.`;
     default:
@@ -153,7 +157,7 @@ async function withWeb(system: string, messages: Anthropic.Beta.BetaMessageParam
         ...FALLBACK,
       });
       usd += track(res);
-      if (res.stop_reason === 'refusal') throw new AIError('Claude ville ikke svare på dette.');
+      if (res.stop_reason === 'refusal') throw new AIError(t('Claude ville ikke svare på dette.'));
       for (const b of res.content) {
         if (b.type === 'web_search_tool_result' && Array.isArray(b.content)) {
           for (const r of b.content) if (r.type === 'web_search_result') links.set(r.url, r.title);
@@ -174,7 +178,7 @@ export async function tellMore(photo: string | null, f: Find) {
     ...(photo ? [imageBlock(photo)] : []),
     { type: 'text', text: `${f.answer ? `Du har allerede sagt: ${f.answer.navn}. ${f.answer.svar}\n\n` : ''}${moreTask(f)}\nGentag ikke det, du allerede har sagt. Skriv ikke om, at du søger.` },
   ];
-  return withWeb(`${GUIDE}\n\nNu er det ${now()}. ${placeText(f)}`, [{ role: 'user', content: first }], 'low');
+  return withWeb(`${GUIDE}\n\nNu er det ${now()}. ${placeText(f)}${answerLanguage()}`, [{ role: 'user', content: first }], 'low');
 }
 
 /** Spørg videre (stemme eller tekst) om fundet, eller uden billede om stedet. */
@@ -191,7 +195,7 @@ export async function askAbout(photo: string | null, f: Find, question: string) 
     } else messages.push({ role: t.role, content: t.text });
   });
   return withWeb(
-    `${GUIDE}\nSlå op på nettet, når svaret kræver fakta, du ikke er sikker på (åbningstider, priser, historie, vejledninger).\n\nNu er det ${now()}. ${placeText(f)}`,
+    `${GUIDE}\nSlå op på nettet, når svaret kræver fakta, du ikke er sikker på (åbningstider, priser, historie, vejledninger).\n\nNu er det ${now()}. ${placeText(f)}${answerLanguage()}`,
     messages,
     'medium',
   );
@@ -212,12 +216,12 @@ export async function writeDay(finds: Find[], dayLabel: string): Promise<{ text:
       model: s.model,
       max_tokens: 4000,
       output_config: { effort: 'low' },
-      system: 'Du skriver et kort dagbogsafsnit på dansk i jeg-form ud fra de ting, personen så og spurgte om i løbet af dagen. 4-8 sætninger, varmt og konkret, uden at finde på noget, der ikke står i listen. Ingen overskrift, ingen emojis.',
+      system: 'Du skriver et kort dagbogsafsnit på dansk i jeg-form ud fra de ting, personen så og spurgte om i løbet af dagen. 4-8 sætninger, varmt og konkret, uden at finde på noget, der ikke står i listen. Ingen overskrift, ingen emojis.' + answerLanguage(),
       messages: [{ role: 'user', content: `${dayLabel}. Det her så jeg:\n${lines.join('\n')}` }],
       ...FALLBACK,
     });
     const usd = track(res);
-    if (res.stop_reason === 'refusal') throw new AIError('Claude kunne ikke skrive dagen.');
+    if (res.stop_reason === 'refusal') throw new AIError(t('Claude kunne ikke skrive dagen.'));
     const text = res.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim();
     return { text, usd };
   } catch (e) {

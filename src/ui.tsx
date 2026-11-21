@@ -1,4 +1,5 @@
 // Fælles: ikoner, navigation og små hjælpere til skærmene.
+import { locale, t } from './lib/i18n';
 import { useEffect, useState, type ReactNode } from 'react';
 import { dayOf, onChange, type Find } from './lib/db';
 
@@ -50,6 +51,7 @@ const paths: Record<string, ReactNode> = {
   close: <path d="M6 6l12 12M18 6L6 18" />,
   map: <><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z" /><path d="M9 4v14M15 6v14" /></>,
   locate: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2.5" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>,
+  globe: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></>,
   up: <path d="M12 20V4M5 11l7-7 7 7" />,
   retur: <><path d="M9 5L4 10l5 5" /><path d="M4 10h10a6 6 0 0 1 0 12h-3" /></>,
   light: <><path d="M8 3h8l-1 6H9z" /><path d="M9 9v10a3 3 0 0 0 6 0V9M12 13v2" /></>,
@@ -67,15 +69,15 @@ export function Icon({ name, size = 22 }: { name: keyof typeof paths | string; s
 export function TabBar({ active }: { active: string }) {
   const tabs = [
     { id: '', label: 'Kik', icon: 'eye' },
-    { id: 'dage', label: 'Dage', icon: 'days' },
-    { id: 'mere', label: 'Mere', icon: 'more' },
+    { id: 'dage', label: t('Dage'), icon: 'days' },
+    { id: 'mere', label: t('Mere'), icon: 'more' },
   ];
   return (
     <nav className="tabbar">
-      {tabs.map((t) => (
-        <a key={t.id} href={`#/${t.id}`} className={active === t.id ? 'on' : ''}>
-          <span className="pill"><Icon name={t.icon} /></span>
-          {t.label}
+      {tabs.map((tab) => (
+        <a key={tab.id} href={`#/${tab.id}`} className={active === tab.id ? 'on' : ''}>
+          <span className="pill"><Icon name={tab.icon} /></span>
+          {tab.label}
         </a>
       ))}
     </nav>
@@ -83,19 +85,19 @@ export function TabBar({ active }: { active: string }) {
 }
 
 export function time(ms: number): string {
-  return new Date(ms).toLocaleTimeString('da-DK', { timeZone: 'Europe/Copenhagen', hour: '2-digit', minute: '2-digit' });
+  return new Date(ms).toLocaleTimeString(locale(), { timeZone: 'Europe/Copenhagen', hour: '2-digit', minute: '2-digit' });
 }
 
 /** "Lørdag 1. november" */
 export function dayLabel(day: string): string {
   const d = new Date(`${day}T12:00:00`);
-  const s = d.toLocaleDateString('da-DK', { weekday: 'long', day: 'numeric', month: 'long' });
+  const s = d.toLocaleDateString(locale(), { weekday: 'long', day: 'numeric', month: 'long' });
   return s[0].toUpperCase() + s.slice(1);
 }
 
 /** "I dag · Tisvilde Strand" eller "14. oktober · 16.42" */
 export function findMeta(f: Find): string {
-  const d = f.day === dayOf(Date.now()) ? 'I dag' : new Date(`${f.day}T12:00:00`).toLocaleDateString('da-DK', { day: 'numeric', month: 'long' });
+  const d = f.day === dayOf(Date.now()) ? t('I dag') : new Date(`${f.day}T12:00:00`).toLocaleDateString(locale(), { day: 'numeric', month: 'long' });
   return `${d} · ${f.answer?.hvor || time(f.createdAt)}`;
 }
 
@@ -105,7 +107,7 @@ export function FindRow({ f, meta }: { f: Find; meta?: string }) {
     <a className="row" href={`#/fund/${f.id}`}>
       {f.thumb ? <img className="thumb" src={f.thumb} alt="" /> : <span className="thumb q"><Icon name="mic" /></span>}
       <span className="grow">
-        <b>{f.answer?.navn ?? f.question ?? (f.busy ? 'Kigger …' : 'Uden svar')}</b>
+        <b>{f.answer?.navn ?? f.question ?? (f.busy ? t('Kigger …') : t('Uden svar'))}</b>
         <span>{meta ?? findMeta(f)}</span>
       </span>
     </a>

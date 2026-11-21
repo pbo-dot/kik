@@ -29,6 +29,10 @@ console.log(scheme,'retur:',(await p.locator('.way').innerText()).replace(/\n/g,
 await p.screenshot({path:`${SP}/10-retur-${scheme}.png`});
 const startVis=await p.evaluate(()=>{const m=document.querySelector('.map').getBoundingClientRect();const d=document.querySelector('.start-dot').getBoundingClientRect();return d.x>=m.x&&d.right<=m.right&&d.y>=m.y&&d.bottom<=m.bottom});
 console.log(scheme,'start synlig ved retur:',startVis);
+await p.getByRole('radio',{name:'Direkte'}).click();await p.waitForSelector('text=direkte til start');await p.waitForTimeout(300);
+console.log(scheme,'direkte:',(await p.locator('.way').innerText()).replace(/\n/g,' | '),'| streg:',await p.locator('.direct-line').count());
+await p.screenshot({path:`${SP}/11-direkte-${scheme}.png`});
+await p.getByRole('radio',{name:'Samme vej'}).click();await p.waitForTimeout(200);
 await p.locator('.fab').click();await p.waitForTimeout(400);
 console.log(scheme,'følg mig igen, knap væk:',!(await p.locator('.fab').count()));
 await p.getByText('Skjul pil').click();await p.waitForSelector('.stats');

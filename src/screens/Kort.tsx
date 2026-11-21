@@ -1,4 +1,5 @@
 // Kort: hvor du er, og hvor du har gået. Kortet følger dig, og "Find retur" viser vejen tilbage til start.
+import { durText, locale, t } from '../lib/i18n';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
@@ -6,17 +7,20 @@ import { torch } from '../lib/device';
 import { bearing, directionWord, follow, getHere, getTrack, onHeading, onTrack, startTrack, stopTrack, trackKm, wayBack } from '../lib/track';
 import { Icon, go } from '../ui';
 
-const kmText = (v: number) => (v < 1 ? `${Math.round(v * 100) * 10} m` : `${v.toLocaleString('da-DK', { maximumFractionDigits: 1 })} km`);
-const durText = (min: number) => (min < 60 ? `${min} min` : `${Math.floor(min / 60)} t ${min % 60} min`);
+const ROUTE_KEY = 'kik.returVej';
+const kmText = (v: number) => (v < 1 ? `${Math.round(v * 100) * 10} m` : `${v.toLocaleString(locale(), { maximumFractionDigits: 1 })} km`);
 
 export default function Kort({ back: startBack = false }: { back?: boolean }) {
   const [, tick] = useState(0);
   const [now, setNow] = useState(() => Date.now());
   const box = useRef<HTMLDivElement>(null);
-  const map = useRef<{ m: L.Map; line: L.Polyline; start: L.CircleMarker; me: L.CircleMarker; placed: boolean } | null>(null);
+  const map = useRef<{ m: L.Map; line: L.Polyline; direct: L.Polyline; start: L.CircleMarker; me: L.CircleMarker; placed: boolean } | null>(null);
   const [following, setFollowing] = useState(true);
   const followRef = useRef(true);
   const [showBack, setShowBack] = useState(startBack);
+  // Find retur: samme vej tilbage ad sporet, eller direkte mod start
+  const [direct, setDirect] = useState(() => { try { return localStorage.getItem(ROUTE_KEY) === 'direkte'; } catch { return false; } });
+  const pickRoute = (d: boolean) => { setDirect(d); try { localStorage.setItem(ROUTE_KEY, d ? 'direkte' : 'samme'); } catch { /* ingen lagring */ } };
   const [heading, setHeading] = useState<number | null>(null);
   const [light, setLight] = useState(false);
   const [msg, setMsg] = useState('');
@@ -43,11 +47,12 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
     m.attributionControl.setPrefix(false);
     const line = L.polyline([], { className: 'trk', weight: 6, lineCap: 'round', dashArray: '1 12' }).addTo(m);
     const start = L.circleMarker(c, { className: 'start-dot', radius: 11, weight: 3 })
-      .bindTooltip('Start', { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' });
+      .bindTooltip(t('Start'), { permanent: true, direction: 'top', offset: [0, -10], className: 'map-label' });
     const me = L.circleMarker(c, { className: 'me-dot', radius: 9, weight: 3 });
+    const direct = L.polyline([], { className: 'direct-line', weight: 5, lineCap: 'round', dashArray: '10 10' });
     // Flytter man selv kortet, holder det op med at følge
     m.on('dragstart', () => { followRef.current = false; setFollowing(false); });
-    map.current = { m, line, start, me, placed: false };
+    map.current = { m, line, direct, start, me, placed: false };
     return () => { m.remove(); map.current = null; };
   }, []);
 
@@ -59,6 +64,11 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
     k.line.setLatLngs(pts);
     if (track) { k.start.setLatLng(pts[0]); if (!k.m.hasLayer(k.start)) k.start.addTo(k.m); }
     else if (k.m.hasLayer(k.start)) k.start.remove();
+    // Direkte: en lige streg fra dig til start, og sporet tones ned
+    const showDirect = !!(track && here && showBack && direct);
+    if (showDirect) { k.direct.setLatLngs([[here!.lat, here!.lon], pts[0]]); if (!k.m.hasLayer(k.direct)) k.direct.addTo(k.m); }
+    else if (k.m.hasLayer(k.direct)) k.direct.remove();
+    k.line.getElement()?.classList.toggle('faded', showDirect);
     if (!here) return;
     k.me.setLatLng([here.lat, here.lon]);
     if (!k.m.hasLayer(k.me)) k.me.addTo(k.m);
@@ -70,7 +80,7 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
     } else if (followRef.current) {
       k.m.panTo([here.lat, here.lon], { animate: !matchMedia('(prefers-reduced-motion: reduce)').matches });
     }
-  }, [track, here]);
+  }, [track, here, showBack, direct]);
 
   // Find retur: vis hele vejen tilbage (dig og start) på én gang
   function showWayBack() {
@@ -95,7 +105,7 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
   }
 
   function stop() {
-    if (!confirm('Stop sporet? Vejen tilbage glemmes.')) return;
+    if (!confirm(t('Stop sporet? Vejen tilbage glemmes.'))) return;
     void torch(false);
     setLight(false);
     setShowBack(false);
@@ -105,33 +115,42 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
   async function toggleLight() {
     const ok = await torch(!light);
     if (ok) setLight(!light);
-    else setMsg('Lommelygten kan ikke tændes herfra.');
+    else setMsg(t('Lommelygten kan ikke tændes herfra.'));
   }
 
-  const way = track && here ? wayBack(track, here) : null;
+  const back = track && here ? wayBack(track, here) : null;
+  const startPt = track ? { lat: track.pts[0][0], lon: track.pts[0][1] } : null;
+  const way = back && (direct ? { ...back, km: back.direct, minutes: Math.max(1, Math.round((back.direct / 4) * 60)), target: startPt! } : back);
   const course = way && here ? bearing(here, way.target) : null;
   const arrow = course == null ? 0 : heading == null ? course : course - heading;
-  const lightBtn = <button className={`btn ${light ? 'filled' : 'tonal'}`} onClick={toggleLight}><Icon name="light" /> {light ? 'Sluk' : 'Lygte'}</button>;
+  const lightBtn = <button className={`btn ${light ? 'filled' : 'tonal'}`} onClick={toggleLight}><Icon name="light" /> {light ? t('Sluk') : t('Lygte')}</button>;
 
   return (
     <main className="page kort">
       <header className="top">
-        <button className="round" onClick={() => go('/')} aria-label="Tilbage"><Icon name="back" /></button>
-        <h1 className="h-small grow">Kort</h1>
-        {track && <button className="round" onClick={stop} aria-label="Stop spor"><Icon name="stop" /></button>}
+        <button className="round" onClick={() => go('/')} aria-label={t('Tilbage')}><Icon name="back" /></button>
+        <h1 className="h-small grow">{t('Kort')}</h1>
+        {track && <button className="round" onClick={stop} aria-label={t('Stop spor')}><Icon name="stop" /></button>}
       </header>
 
+      {track && showBack && (
+        <div className="seg" role="radiogroup" aria-label={t('Vej tilbage')}>
+          <button role="radio" aria-checked={!direct} className={!direct ? 'on' : ''} onClick={() => pickRoute(false)}>{t('Samme vej')}</button>
+          <button role="radio" aria-checked={direct} className={direct ? 'on' : ''} onClick={() => pickRoute(true)}>{t('Direkte')}</button>
+        </div>
+      )}
+
       <div className="map-wrap">
-        <div ref={box} className="map" role="img" aria-label="Kort over, hvor du er og har gået" />
-        {!following && here && <button className="fab" onClick={recenter} aria-label="Følg mig"><Icon name="locate" /></button>}
+        <div ref={box} className="map" role="img" aria-label={t('Kort over, hvor du er og har gået')} />
+        {!following && here && <button className="fab" onClick={recenter} aria-label={t('Følg mig')}><Icon name="locate" /></button>}
       </div>
 
-      {!here && <p className="muted center">Finder dig …</p>}
+      {!here && <p className="muted center">{t('Finder dig …')}</p>}
 
       {track && !showBack && (
         <div className="stats">
-          <div className="card"><b>{kmText(trackKm(track))}</b><span>gået</span></div>
-          <div className="card"><b>{durText(Math.max(0, Math.round((now - track.startedAt) / 60_000)))}</b><span>siden start</span></div>
+          <div className="card"><b>{kmText(trackKm(track))}</b><span>{t('gået')}</span></div>
+          <div className="card"><b>{durText(Math.max(0, Math.round((now - track.startedAt) / 60_000)))}</b><span>{t('siden start')}</span></div>
         </div>
       )}
 
@@ -142,22 +161,23 @@ export default function Kort({ back: startBack = false }: { back?: boolean }) {
             {way ? (
               <>
                 <span className="big">{kmText(way.km)}</span>
-                <span className="muted">til start · ca. {way.minutes} min</span>
-                <span className="muted">{way.direct < 0.03 ? 'Du er ved start' : course != null ? `Gå mod ${directionWord(course)}` : ''}</span>
+                <span className="muted">{direct ? t('direkte til start') : t('til start')} · {t('ca. {n} min', { n: way.minutes })}</span>
+                <span className="muted">{way.direct < 0.03 ? t('Du er ved start') : course != null ? t('Gå mod {dir}', { dir: t(directionWord(course)) }) : ''}</span>
               </>
-            ) : <span className="muted">Finder dig …</span>}
+            ) : <span className="muted">{t('Finder dig …')}</span>}
+            {way && direct && way.km >= 0.03 && <span className="warn">{t('Direkte kan gå over hegn, vand eller privat grund.')}</span>}
           </span>
         </section>
       )}
 
       <div className="actions">
-        {!track && <button className="btn filled" onClick={start} disabled={starting}><Icon name="pin" /> {starting ? 'Finder dig …' : 'Start spor'}</button>}
-        {track && !showBack && <button className="btn filled" onClick={showWayBack}><Icon name="retur" /> Find retur</button>}
-        {track && showBack && <button className="btn tonal" onClick={() => setShowBack(false)}><Icon name="map" /> Skjul pil</button>}
+        {!track && <button className="btn filled" onClick={start} disabled={starting}><Icon name="pin" /> {starting ? t('Finder dig …') : t('Start spor')}</button>}
+        {track && !showBack && <button className="btn filled" onClick={showWayBack}><Icon name="retur" /> {t('Find retur')}</button>}
+        {track && showBack && <button className="btn tonal" onClick={() => setShowBack(false)}><Icon name="map" /> {t('Skjul pil')}</button>}
         {lightBtn}
       </div>
       {msg && <p className="muted small center">{msg}</p>}
-      {track && <p className="muted small center">Hold Kik åben, så sporet bliver helt.</p>}
+      {track && <p className="muted small center">{t('Hold Kik åben, så sporet bliver helt.')}</p>}
     </main>
   );
 }
